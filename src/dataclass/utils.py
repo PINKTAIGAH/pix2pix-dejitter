@@ -80,4 +80,4 @@ def findMax(tensor):
 
 
 def normaliseTensor(tensor):
-    return (tensor-findMin(tensor)/findMax(tensor))
+    return (tensor-findMin(tensor))/findMax(tensor)

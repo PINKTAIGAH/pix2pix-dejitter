@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
     # """
     N=256 
-    dataset = JitteredDataset(N, 2)
+    dataset = JitteredDataset(N, 20)
     loader = DataLoader(dataset, batch_size=5)
     for x, y in loader:
         
