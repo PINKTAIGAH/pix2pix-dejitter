@@ -47,15 +47,10 @@ if __name__ == "__main__":
     """
     Tensorboard setup
     """
-    writerScaled = SummaryWriter("runs/scaled")
-    writerUnscaled = SummaryWriter("runs/unscaled")
+    writerScaled = SummaryWriter("runs/jittered")
+    writerUnscaled = SummaryWriter("runs/unjittered")
 
-    dataset = JitteredDataset(10, 2)
-    jittered, truth = dataset[0] 
-
-
-    # """
-    N=256 
+    N=1000 
     dataset = JitteredDataset(N, 20)
     loader = DataLoader(dataset, batch_size=5)
     for x, y in loader:
@@ -63,16 +58,15 @@ if __name__ == "__main__":
         x = utils.normaliseTensor(x)
         y = utils.normaliseTensor(y)
 
-        save_image(x, "scaled_x.tiff")
-        save_image(y, "unscaled_y.tiff")
+        save_image(x, "images/Jittered.pdf")
+        save_image(y, "images/Unjittered.pdf")
 
         xGrid = torchvision.utils.make_grid(x, normalize=True)
         yGrid = torchvision.utils.make_grid(y, normalize=True)
         
-        writerScaled.add_image("Example Image scaled", xGrid)
-        writerUnscaled.add_image("Example Image unscaled", yGrid)
+        writerScaled.add_image("Example of jittered", xGrid)
+        writerUnscaled.add_image("Example of unjittered", yGrid)
         
         writerUnscaled.close()
         writerScaled.close()
         sys.exit()
-    # """
