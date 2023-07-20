@@ -44,19 +44,28 @@ class JitteredDataset(Dataset):
 if __name__ == "__main__":
     dataset = JitteredDataset(10, 2)
     jittered, truth = dataset[0] 
-    print(jittered.shape, truth.shape)
-    save_image(jittered, "x.png")
+
 
     # """
-    N= 6
+    N=256 
     dataset = JitteredDataset(N, 2)
     loader = DataLoader(dataset, batch_size=5)
     for x, y in loader:
-        print(x)
-        plt.imshow(x.view(-1, N, N)[0])
-        print(x.view(-1, N, N)[0])
-        plt.show()
-        save_image(y, "y.png")
+        # x = x - torch.min(x, 0)
+        min_vals, _ = x.view(-1, N*N).min(axis=1)
+        min_x = torch.ones_like(x)
+        for i in range(min_vals.shape[0]):
+            min_x[i] = min_x[i]*min_vals[i]
+        
+        x = x - min_x
 
+        max_vals, _ = x.view(-1, N*N).max(axis=1)
+        max_x = torch.ones_like(x)
+        for i in range(max_vals.shape[0]):
+            max_x[i] = max_x[i]*max_vals[i]
+
+        x = x/max_x*255 
+        print(x)
+        save_image(x, "scaled_x.png")
         sys.exit()
     # """
