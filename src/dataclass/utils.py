@@ -3,6 +3,10 @@ import config
 from torchvision.utils import save_image
 import torch.nn.functional as F
 
+"""
+Saving Images
+"""
+
 def saveSomeExamples(generator, validationLoader, epoch, folder):
     x, y = next(iter(validationLoader))
     x, y = x.to(config.DEVICE), y.to(config.DEVICE)
@@ -37,6 +41,10 @@ def loadCheckpoint(checkpointFile, model, optimizer, lr):
     for paramGroup in optimizer.paramGroups:
         paramGroup["lr"] = lr
 
+"""
+Tensor Manipulation
+"""
+
 def tensorConcatinate(tensorLeft, tensorRight):
     tensorRight = tensorRight.view(-1, tensorRight.shape[-1])
     tensorLeft = tensorLeft.view(-1, tensorLeft.shape[-1])
@@ -48,3 +56,28 @@ def verticalEdges(inputTensor):
     return F.conv2d(inputTensor.reshape(1, 1, *inputTensor.shape),
                     config.SOBEL_KERNAL.reshape(1, 1, *config.SOBEL_KERNAL.shape),
                     padding="same")
+
+"""
+Tensor Normalisation
+"""
+
+def findMin(tensor):
+    N = tensor.shape[-1]
+    minVals, _ = tensor.view(-1, N*N).min(axis=1)
+    minTensor = torch.ones_like(tensor)
+    for i in range(minVals.shape[0]):
+       minTensor[i] = minTensor[i]*minVals[i]
+    return minTensor
+
+
+def findMax(tensor):
+    N = tensor.shape[-1]
+    maxVals, _ = tensor.view(-1, N*N).max(axis=1)
+    maxTensor = torch.ones_like(tensor)
+    for i in range(maxVals.shape[0]):
+       maxTensor[i] = maxTensor[i]*maxVals[i]
+    return maxTensor
+
+
+def normaliseTensor(tensor):
+    return (tensor-findMin(tensor)/findMax(tensor))

@@ -1,6 +1,8 @@
 import sys
 import torch
+import torchvision
 import utils 
+from torch.utils.tensorboard.writer import SummaryWriter
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 from ImageGenerator import ImageGenerator
@@ -42,6 +44,12 @@ class JitteredDataset(Dataset):
         return jitteredTruthTorch, groundTruthTorch
 
 if __name__ == "__main__":
+    """
+    Tensorboard setup
+    """
+    writerScaled = SummaryWriter("runs/scaled")
+    writerUnscaled = SummaryWriter("runs/unscaled")
+
     dataset = JitteredDataset(10, 2)
     jittered, truth = dataset[0] 
 
@@ -51,21 +59,20 @@ if __name__ == "__main__":
     dataset = JitteredDataset(N, 2)
     loader = DataLoader(dataset, batch_size=5)
     for x, y in loader:
-        # x = x - torch.min(x, 0)
-        min_vals, _ = x.view(-1, N*N).min(axis=1)
-        min_x = torch.ones_like(x)
-        for i in range(min_vals.shape[0]):
-            min_x[i] = min_x[i]*min_vals[i]
         
-        x = x - min_x
+        x = utils.normaliseTensor(x)
+        y = utils.normaliseTensor(y)
 
-        max_vals, _ = x.view(-1, N*N).max(axis=1)
-        max_x = torch.ones_like(x)
-        for i in range(max_vals.shape[0]):
-            max_x[i] = max_x[i]*max_vals[i]
+        save_image(x, "scaled_x.tiff")
+        save_image(y, "unscaled_y.tiff")
 
-        x = x/max_x*255 
-        print(x)
-        save_image(x, "scaled_x.png")
+        xGrid = torchvision.utils.make_grid(x, normalize=True)
+        yGrid = torchvision.utils.make_grid(y, normalize=True)
+        
+        writerScaled.add_image("Example Image scaled", xGrid)
+        writerUnscaled.add_image("Example Image unscaled", yGrid)
+        
+        writerUnscaled.close()
+        writerScaled.close()
         sys.exit()
     # """
