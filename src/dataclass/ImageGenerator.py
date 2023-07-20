@@ -21,7 +21,7 @@ class ImageGenerator(object):
         array = np.random.random((self.N, self.N))
 
         for _ in range(nConvolutions):
-            array = convolve2d(array, self.kernal, boundary="wrap")
+            array = convolve2d(array, self.kernal, boundary="wrap", mode="same")
         return array
 
 if __name__ == "__main__":
