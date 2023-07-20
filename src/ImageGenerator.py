@@ -2,7 +2,6 @@ import numpy as np
 import torch 
 from skimage.filters import gaussian
 from scipy.signal import convolve2d
-import matplotlib.pyplot as plt
 
 class ImageGenerator(object):
     def __init__(self, N=64):
@@ -26,5 +25,5 @@ class ImageGenerator(object):
 
 if __name__ == "__main__":
     Generator = ImageGenerator()
-    plt.imshow(Generator.genericNoise(),)
-    plt.show()
+#    plt.imshow(Generator.genericNoise(),)
+#    plt.show()

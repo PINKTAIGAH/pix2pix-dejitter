@@ -3,7 +3,7 @@ from utils import saveCheckpoint, loadCheckpoint, saveSomeExamples
 import torch.nn as nn
 import torch.optim as optim
 import config
-from dataclass.dataset import JitteredDataset 
+from dataset import JitteredDataset 
 from generator import Generator
 from discriminator import Discriminator
 from torch.utils.data import DataLoader

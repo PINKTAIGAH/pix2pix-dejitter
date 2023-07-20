@@ -48,3 +48,24 @@ def verticalEdges(inputTensor):
     return F.conv2d(inputTensor.reshape(1, 1, *inputTensor.shape),
                     config.SOBEL_KERNAL.reshape(1, 1, *config.SOBEL_KERNAL.shape),
                     padding="same")
+
+def findMin(tensor):
+    N = tensor.shape[-1]
+    minVals, _ = tensor.view(-1, N*N).min(axis=1)
+    minTensor = torch.ones_like(tensor)
+    for i in range(minVals.shape[0]):
+       minTensor[i] = minTensor[i]*minVals[i]
+    return minTensor
+
+
+def findMax(tensor):
+    N = tensor.shape[-1]
+    maxVals, _ = tensor.view(-1, N*N).max(axis=1)
+    maxTensor = torch.ones_like(tensor)
+    for i in range(maxVals.shape[0]):
+       maxTensor[i] = maxTensor[i]*maxVals[i]
+    return maxTensor
+
+
+def normaliseTensor(tensor):
+    return (tensor-findMin(tensor))/findMax(tensor)

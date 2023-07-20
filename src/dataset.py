@@ -7,7 +7,6 @@ from torch.utils.data import Dataset, DataLoader
 from ImageGenerator import ImageGenerator
 from JitterFilter import JitterFilter
 from torchvision.utils import save_image
-import matplotlib.pyplot as plt
 
 class JitteredDataset(Dataset):
     def __init__(self, N, maxJitter, psfSigma=3, length=100, concatImages=False):
