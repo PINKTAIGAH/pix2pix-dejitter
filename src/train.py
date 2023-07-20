@@ -3,7 +3,7 @@ from utils import saveCheckpoint, loadCheckpoint, saveSomeExamples
 import torch.nn as nn
 import torch.optim as optim
 import config
-from dataset import MapDataset
+from dataclass.dataset import JitteredDataset 
 from generator import Generator
 from discriminator import Discriminator
 from torch.utils.data import DataLoader
@@ -80,7 +80,7 @@ def main():
             optimiserDiscriminator, config.LEARNING_RATE,
         )
 
-    trainDataset = MapDataset(rootDirectory=config.TRAIN_DIR)
+    trainDataset = JitteredDataset(config.IMAGE_SIZE, config.IMAGE_JITTER)
     trainLoader = DataLoader(
         trainDataset,
         batch_size=config.BATCH_SIZE,
@@ -90,7 +90,7 @@ def main():
     gScaler = torch.cuda.amp.GradScaler()
     dScaler = torch.cuda.amp.GradScaler()
 
-    validationDataset = MapDataset(rootDirectory=config.VAL_DIR)
+    validationDataset = JitteredDataset(config.IMAGE_SIZE, config.IMAGE_JITTER)
     validationLoader = DataLoader(validationDataset, batch_size=1, shuffle=False)
 
     for epoch in range(config.N_EPOCHS):
