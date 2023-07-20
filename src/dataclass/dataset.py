@@ -1,10 +1,12 @@
 import sys
 import torch
 import utils 
+from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 from ImageGenerator import ImageGenerator
 from JitterFilter import JitterFilter
 from torchvision.utils import save_image
+import matplotlib.pyplot as plt
 
 class JitteredDataset(Dataset):
     def __init__(self, N, maxJitter, psfSigma=3, length=100, concatImages=False):
@@ -24,11 +26,14 @@ class JitteredDataset(Dataset):
         jitteredTruthNumpy = self.Filter.rowJitter(groundTruthNumpy, self.N,
                                                    self.maxJitter)
 
+        # Image.fromarray(groundTruthNumpy*255).convert("RGB").save("x_np.png")
+        # Image.fromarray(jitteredTruthNumpy*255).convert("RGB").save("y_np.png")
+
         groundTruthTorch = torch.tensor(groundTruthNumpy, dtype=torch.float32) 
         jitteredTruthTorch = torch.tensor(jitteredTruthNumpy, dtype=torch.float32) 
 
-        groundTruthTorch.view(-1, 1, self.N, self.N)
-        jitteredTruthTorch.view(-1, 1, self.N, self.N)
+        groundTruthTorch = torch.unsqueeze(groundTruthTorch, 0)
+        jitteredTruthTorch = torch.unsqueeze(jitteredTruthTorch, 0)
 
         if self.concatImages:
             return utils.tensorConcatinate(jitteredTruthTorch, groundTruthTorch)
@@ -37,17 +42,20 @@ class JitteredDataset(Dataset):
         return jitteredTruthTorch, groundTruthTorch
 
 if __name__ == "__main__":
-    # dataset = JitteredDataset(10, 2)
-    # jittered, truth = dataset[0] 
-    # print(jittered.shape, truth.shape)
+    dataset = JitteredDataset(10, 2)
+    jittered, truth = dataset[0] 
+    print(jittered.shape, truth.shape)
+    save_image(jittered, "x.png")
 
     # """
-    dataset = JitteredDataset(256, 2)
+    N= 6
+    dataset = JitteredDataset(N, 2)
     loader = DataLoader(dataset, batch_size=5)
     for x, y in loader:
-        print(loader.__len__())
-        print(x.shape)
-        save_image(x, "x.png")
+        print(x)
+        plt.imshow(x.view(-1, N, N)[0])
+        print(x.view(-1, N, N)[0])
+        plt.show()
         save_image(y, "y.png")
 
         sys.exit()
