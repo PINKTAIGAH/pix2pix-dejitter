@@ -52,7 +52,8 @@ if __name__ == "__main__":
 
     N=1000 
     dataset = JitteredDataset(N, 20)
-    loader = DataLoader(dataset, batch_size=5)
+    loader = DataLoader(dataset, batch_size=64)
+    sys.exit()
     for x, y in loader:
         
         x = utils.normaliseTensor(x)
