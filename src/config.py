@@ -1,6 +1,6 @@
 import torch
-import albumentations as A
-from albumentations.pytorch import ToTensorV2
+#import albumentations as A
+#from albumentations.pytorch import ToTensorV2
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu") 
 TRAIN_DIR = "/media/giorgio/HDD/GAN/pix2pix/datasets/maps/maps/train/"
@@ -26,7 +26,7 @@ SOBEL_KERNAL = torch.tensor(
         [-1, 0, 1]
     ], dtype=torch.float32
 )
-
+"""
 bothTransform = A.Compose(
     [A.Resize(width=256, height=256),], additional_targets={"image0": "image"},
 )
@@ -46,3 +46,4 @@ transformOnlyMask = A.Compose(
         ToTensorV2(),
     ]
 )
+"""
