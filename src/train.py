@@ -59,8 +59,8 @@ def train(discriminator, generator, loader, optimiserDiscriminator,
 
 
 def main():
-    discriminator = Discriminator(inChannel=3).to(config.DEVICE)
-    generator = Generator(inChannels=3, features=64).to(config.DEVICE)
+    discriminator = Discriminator(inChannel=config.CHANNELS_IMAGE).to(config.DEVICE)
+    generator = Generator(inChannels=config.CHANNELS_IMAGE, features=64).to(config.DEVICE)
 
     optimiserDiscriminator = optim.Adam(discriminator.parameters(),
                                         lr=config.LEARNING_RATE, betas=(0.5, 0.999),)
@@ -80,7 +80,7 @@ def main():
             optimiserDiscriminator, config.LEARNING_RATE,
         )
 
-    trainDataset = JitteredDataset(config.IMAGE_SIZE, config.IMAGE_JITTER)
+    trainDataset = JitteredDataset(config.IMAGE_SIZE, config.IMAGE_JITTER, length=4096)
     trainLoader = DataLoader(
         trainDataset,
         batch_size=config.BATCH_SIZE,
@@ -90,7 +90,7 @@ def main():
     gScaler = torch.cuda.amp.GradScaler()
     dScaler = torch.cuda.amp.GradScaler()
 
-    validationDataset = JitteredDataset(config.IMAGE_SIZE, config.IMAGE_JITTER)
+    validationDataset = JitteredDataset(config.IMAGE_SIZE, config.IMAGE_JITTER, length=128)
     validationLoader = DataLoader(validationDataset, batch_size=1, shuffle=False)
 
     for epoch in range(config.N_EPOCHS):

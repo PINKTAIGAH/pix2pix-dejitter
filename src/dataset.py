@@ -9,7 +9,7 @@ from JitterFilter import JitterFilter
 from torchvision.utils import save_image
 
 class JitteredDataset(Dataset):
-    def __init__(self, N, maxJitter, psfSigma=3, length=100, concatImages=False):
+    def __init__(self, N, maxJitter, psfSigma=3, length=128, concatImages=False):
         self.N = N
         self.length = length
         self.maxJitter = maxJitter
