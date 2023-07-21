@@ -9,6 +9,7 @@ from discriminator import Discriminator
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from torchvision.utils import save_image
+from torch.utils.tensorboard.writer import SummaryWriter
 
 # torch.backends.cudnn.benchmark = True
 
@@ -17,6 +18,9 @@ def train(discriminator, generator, loader, optimiserDiscriminator,
           optimiserGenerator, l1Loss, bce, gScaler, dScaler):
 
     loop = tqdm(loader, leave=True)
+    # step = 0
+    # writerReal = SummaryWriter(f"runs/real")
+    # writerFake = SummaryWriter(f"runs/fake")
 
     for idx, (x, y) in enumerate(loop):
         x = x.to(config.DEVICE)
@@ -56,7 +60,22 @@ def train(discriminator, generator, loader, optimiserDiscriminator,
                 discriminatorReal=torch.sigmoid(discriminatorReal).mean().item(),
                 discriminatorFake=torch.sigmoid(discriminatorFake).mean().item(),
             )
+	
+    """
+	with torch.no_grad():
+	    fakeSample = generator(x)
+	    
+            imageGridReal = torchvision.utils.make_grid(y[:32], normalize=True)
+            imageGridFake = torchvision.utils.make_grid(fakeSample[:32], normalize=True)
 
+            writerReal.add_image("real", imageGridReal, global_step=step)
+            writerFake.add_image("fake", imageGridFake, global_step=step)
+
+            step +=1
+
+    writerReal.close()	
+    writerFake.close()	
+    """
 
 def main():
     discriminator = Discriminator(inChannel=config.CHANNELS_IMAGE).to(config.DEVICE)
