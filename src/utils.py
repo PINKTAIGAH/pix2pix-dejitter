@@ -33,7 +33,7 @@ def loadCheckpoint(checkpointFile, model, optimizer, lr):
 
     # If we don't do this then it will just have learning rate of old checkpoint
     # and it will lead to many hours of debugging \:
-    for paramGroup in optimizer.paramGroups:
+    for paramGroup in optimizer.param_groups:
         paramGroup["lr"] = lr
 
 def tensorConcatinate(tensorLeft, tensorRight):
