@@ -10,6 +10,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from torchvision.utils import save_image
 from torch.utils.tensorboard.writer import SummaryWriter
+import torchvision
 
 # torch.backends.cudnn.benchmark = True
 
@@ -60,14 +61,13 @@ def train(discriminator, generator, loader, optimiserDiscriminator,
             )
 	
     
-	    with torch.no_grad():
-	        fakeSample = generator(x)
-	    
+        with torch.no_grad():
+            fakeSample = generator(x) 
             imageGridReal = torchvision.utils.make_grid(y[:32], normalize=True)
             imageGridFake = torchvision.utils.make_grid(fakeSample[:32], normalize=True)
 
-            writerReal.add_image("real", imageGridReal, global_step=step)
-            writerFake.add_image("fake", imageGridFake, global_step=step)
+            config.WRITER_REAL.add_image("real", imageGridReal, global_step=step)
+            config.WRITER_FAKE.add_image("fake", imageGridFake, global_step=step)
 
             step +=1
 
@@ -120,8 +120,8 @@ def main():
             saveCheckpoint(discriminator, optimiserDiscriminator,
                            filename=config.CHECKPOINT_DISC)
 
-        if epoch % 50 == 0
-	    saveSomeExamples(generator, validationLoader, epoch, folder="evaluation")
+        if epoch % 50 == 0:
+            saveSomeExamples(generator, validationLoader, epoch, folder="evaluation")
 
     config.WRITER_REAL.close()
     config.WRITER_FAKE.close()
