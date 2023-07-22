@@ -1,3 +1,4 @@
+from torch.utils.tensorboard.writer import SummaryWriter
 import torch
 #import albumentations as A
 #from albumentations.pytorch import ToTensorV2
@@ -17,6 +18,8 @@ LAMBDA_GP = 10
 N_EPOCHS = 500
 LOAD_MODEL = True 
 SAVE_MODEL = True 
+WRITER_REAL = SummaryWriter("runs/real")
+WRITER_FAKE = SummaryWriter("runs/fake")
 CHECKPOINT_DISC = "disc.pth.tar"
 CHECKPOINT_GEN = "gen.pth.tar"
 SOBEL_KERNAL = torch.tensor(

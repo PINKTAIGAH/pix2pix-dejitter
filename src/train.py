@@ -19,8 +19,6 @@ def train(discriminator, generator, loader, optimiserDiscriminator,
 
     loop = tqdm(loader, leave=True)
     step = 0
-    writerReal = SummaryWriter(f"runs/real")
-    writerFake = SummaryWriter(f"runs/fake")
 
     for idx, (x, y) in enumerate(loop):
         x = x.to(config.DEVICE)
@@ -62,8 +60,8 @@ def train(discriminator, generator, loader, optimiserDiscriminator,
             )
 	
     
-	with torch.no_grad():
-	    fakeSample = generator(x)
+	    with torch.no_grad():
+	        fakeSample = generator(x)
 	    
             imageGridReal = torchvision.utils.make_grid(y[:32], normalize=True)
             imageGridFake = torchvision.utils.make_grid(fakeSample[:32], normalize=True)
@@ -73,8 +71,6 @@ def train(discriminator, generator, loader, optimiserDiscriminator,
 
             step +=1
 
-    writerReal.close()	
-    writerFake.close()	
    
 
 def main():
@@ -127,6 +123,8 @@ def main():
         if epoch % 50 == 0
 	    saveSomeExamples(generator, validationLoader, epoch, folder="evaluation")
 
+    config.WRITER_REAL.close()
+    config.WRITER_FAKE.close()
 
 if __name__ == "__main__":
     main()
