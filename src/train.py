@@ -18,9 +18,9 @@ def train(discriminator, generator, loader, optimiserDiscriminator,
           optimiserGenerator, l1Loss, bce, gScaler, dScaler):
 
     loop = tqdm(loader, leave=True)
-    # step = 0
-    # writerReal = SummaryWriter(f"runs/real")
-    # writerFake = SummaryWriter(f"runs/fake")
+    step = 0
+    writerReal = SummaryWriter(f"runs/real")
+    writerFake = SummaryWriter(f"runs/fake")
 
     for idx, (x, y) in enumerate(loop):
         x = x.to(config.DEVICE)
@@ -61,7 +61,7 @@ def train(discriminator, generator, loader, optimiserDiscriminator,
                 discriminatorFake=torch.sigmoid(discriminatorFake).mean().item(),
             )
 	
-    """
+    
 	with torch.no_grad():
 	    fakeSample = generator(x)
 	    
@@ -75,7 +75,7 @@ def train(discriminator, generator, loader, optimiserDiscriminator,
 
     writerReal.close()	
     writerFake.close()	
-    """
+   
 
 def main():
     discriminator = Discriminator(inChannel=config.CHANNELS_IMAGE).to(config.DEVICE)
@@ -124,7 +124,8 @@ def main():
             saveCheckpoint(discriminator, optimiserDiscriminator,
                            filename=config.CHECKPOINT_DISC)
 
-        saveSomeExamples(generator, validationLoader, epoch, folder="evaluation")
+        if epoch % 50 == 0
+	    saveSomeExamples(generator, validationLoader, epoch, folder="evaluation")
 
 
 if __name__ == "__main__":

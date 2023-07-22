@@ -9,11 +9,10 @@ def saveSomeExamples(generator, validationLoader, epoch, folder):
     generator.eval()
     with torch.no_grad():
         yFake = generator(x)
-        yFake = yFake * 0.5 + 0.5  # remove normalization#
-        save_image(yFake, folder + f"/y_gen_{epoch}.png")
-        save_image(x * 0.5 + 0.5, folder + f"/input_{epoch}.png")
+        save_image(normaliseTensor(yFake), folder + f"/y_gen_{epoch}.png")
+        save_image(normaliseTensor(x) , folder + f"/input_{epoch}.png")
         if epoch == 1:
-            save_image(y * 0.5 + 0.5, folder + f"/label_{epoch}.png")
+            save_image(normaliseTensor(y) , folder + f"/label_{epoch}.png")
     generator.train()
 
 
