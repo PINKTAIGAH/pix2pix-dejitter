@@ -66,8 +66,8 @@ def train_fn(
 #            step +=1
 
 def main():
-    disc = Discriminator(in_channels=3).to(config.DEVICE)
-    gen = Generator(in_channels=3, features=64).to(config.DEVICE)
+    disc = Discriminator(in_channels=config.CHANNELS_IMG).to(config.DEVICE)
+    gen = Generator(in_channels=config.CHANNELS_IMG, features=64).to(config.DEVICE)
     opt_disc = optim.Adam(disc.parameters(), lr=config.LEARNING_RATE, betas=(0.5, 0.999),)
     opt_gen = optim.Adam(gen.parameters(), lr=config.LEARNING_RATE, betas=(0.5, 0.999))
     BCE = nn.BCEWithLogitsLoss()
@@ -90,7 +90,7 @@ def main():
     )
     g_scaler = torch.cuda.amp.GradScaler()
     d_scaler = torch.cuda.amp.GradScaler()
-    val_dataset = MapDataset(root_dir=config.VAL_DIR)
+    val_dataset = JitteredDataset(config.IMAGE_SIZE, config.IMAGE_JITTER, length=1000) 
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
 
     for epoch in range(config.NUM_EPOCHS):
