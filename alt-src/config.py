@@ -1,6 +1,7 @@
 import torch
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
+from torch.utils.tensorboard.writer import SummaryWriter
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 TRAIN_DIR = "data/train"
@@ -9,6 +10,7 @@ LEARNING_RATE = 2e-4
 BATCH_SIZE = 16
 NUM_WORKERS = 2
 IMAGE_SIZE = 256
+IMAGE_JITTER = 3
 CHANNELS_IMG = 1 
 L1_LAMBDA = 100
 LAMBDA_GP = 10
@@ -17,6 +19,15 @@ LOAD_MODEL = True
 SAVE_MODEL = True
 CHECKPOINT_DISC = "disc.pth.tar"
 CHECKPOINT_GEN = "gen.pth.tar"
+WRITER_REAL = SummaryWriter("runs/real")
+WRITER_FAKE = SummaryWriter("runs/fake")
+SOBEL_KERNAL = torch.tensor(
+    [
+        [-1, 0, 1],
+        [-2, 0, 2],
+        [-1, 0, 1]
+    ], dtype=torch.float32
+)
 
 both_transform = A.Compose(
     [A.Resize(width=256, height=256),], additional_targets={"image0": "image"},

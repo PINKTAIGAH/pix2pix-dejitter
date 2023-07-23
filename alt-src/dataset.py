@@ -2,8 +2,8 @@ import sys
 import torch
 import utils 
 from torch.utils.data import Dataset, DataLoader
-from jitter-generator.ImageGenerator import ImageGenerator
-from jitter-generator.JitterFilter import JitterFilter
+from jitter_generator.ImageGenerator import ImageGenerator
+from jitter_generator.JitterFilter import JitterFilter
 from torchvision.utils import save_image
 
 class JitteredDataset(Dataset):
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     N=1000 
     dataset = JitteredDataset(N, 20)
     loader = DataLoader(dataset, batch_size=64)
-    sys.exit()
+    # sys.exit()
     for x, y in loader:
         
         x = utils.normaliseTensor(x)
