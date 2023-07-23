@@ -3,7 +3,7 @@ from utils import save_checkpoint, load_checkpoint, save_some_examples
 import torch.nn as nn
 import torch.optim as optim
 import config
-from dataset import MapDataset
+from dataset import JitteredDataset  
 from generator import Generator
 from discriminator import Discriminator
 from torch.utils.data import DataLoader
@@ -17,6 +17,7 @@ def train_fn(
     disc, gen, loader, opt_disc, opt_gen, l1_loss, bce, g_scaler, d_scaler,
 ):
     loop = tqdm(loader, leave=True)
+    step = 0
 
     for idx, (x, y) in enumerate(loop):
         x = x.to(config.DEVICE)
@@ -54,6 +55,15 @@ def train_fn(
                 D_fake=torch.sigmoid(D_fake).mean().item(),
             )
 
+#        with torch.no_grad():
+#            fakeSample = generator(x) 
+#            imageGridReal = torchvision.utils.make_grid(y[:32], normalize=True)
+#            imageGridFake = torchvision.utils.make_grid(fakeSample[:32], normalize=True)
+#
+#            config.WRITER_REAL.add_image("real", imageGridReal, global_step=step)
+#            config.WRITER_FAKE.add_image("fake", imageGridFake, global_step=step)
+#
+#            step +=1
 
 def main():
     disc = Discriminator(in_channels=3).to(config.DEVICE)
@@ -71,7 +81,7 @@ def main():
             config.CHECKPOINT_DISC, disc, opt_disc, config.LEARNING_RATE,
         )
 
-    train_dataset = MapDataset(root_dir=config.TRAIN_DIR)
+    train_dataset = JitteredDataset(config.IMAGE_SIZE, config.IMAGE_JITTER, length=1000) 
     train_loader = DataLoader(
         train_dataset,
         batch_size=config.BATCH_SIZE,
@@ -93,7 +103,7 @@ def main():
             save_checkpoint(disc, opt_disc, filename=config.CHECKPOINT_DISC)
 
         save_some_examples(gen, val_loader, epoch, folder="evaluation")
-
+                
 
 if __name__ == "__main__":
     main()

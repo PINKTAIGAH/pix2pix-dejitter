@@ -2,6 +2,7 @@ import torch
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 from torch.utils.tensorboard.writer import SummaryWriter
+from torchvision.transforms import transforms
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 TRAIN_DIR = "data/train"
@@ -48,3 +49,10 @@ transform_only_mask = A.Compose(
         ToTensorV2(),
     ]
 )
+
+transforms = transforms.Compose([
+    transforms.Normalize(
+        [0.5 for _ in range(CHANNELS_IMG)],   # generalise for multi channel
+        [0.5 for _ in range(CHANNELS_IMG)],
+    ),
+])

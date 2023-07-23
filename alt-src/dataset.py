@@ -1,6 +1,7 @@
 import sys
 import torch
-import utils 
+import utils
+import config
 from torch.utils.data import Dataset, DataLoader
 from jitter_generator.ImageGenerator import ImageGenerator
 from jitter_generator.JitterFilter import JitterFilter
@@ -36,6 +37,8 @@ class JitteredDataset(Dataset):
         if self.concatImages:
             return utils.tensorConcatinate(jitteredTruthTorch, groundTruthTorch)
 
+        jitteredTruthTorch = config.transforms(jitteredTruthTorch)
+        groundTruthTorch = config.transforms(groundTruthTorch)
 
         return jitteredTruthTorch, groundTruthTorch
 
@@ -50,7 +53,7 @@ if __name__ == "__main__":
         x = utils.normaliseTensor(x)
         y = utils.normaliseTensor(y)
 
-        save_image(x, "images/Jittered.pdf")
-        save_image(y, "images/Unjittered.pdf")
+        # save_image(x, "images/Jittered.pdf")
+        # save_image(y, "images/Unjittered.pdf")
 
         sys.exit()
