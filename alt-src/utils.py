@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import config
 from torchvision.utils import save_image
@@ -68,5 +69,10 @@ def findMax(tensor):
 
 
 def normaliseTensor(tensor):
-    return (tensor-findMin(tensor))/findMax(tensor)
+    return (tensor-findMin(tensor))/(findMax(tensor) - findMin(tensor))
 
+def normalise(x):
+    if np.sum(x) == 0:
+        raise Exception("Divided by zero. Attempted to normalise a zero tensor")
+
+    return x/np.sum(x**2)
