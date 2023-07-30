@@ -19,10 +19,10 @@ class ImageGenerator(object):
 
         whiteNoise = torch.randn(*self.ftPsf.shape)
         groundTruth = torch.fft.ifft2(self.ftPsf * torch.fft.fft2(whiteNoise))  
-        return torch.real(groundTruth), whiteNoise
+        return torch.real(groundTruth).type(torch.float32), whiteNoise.type(torch.float32)
 
     def generateShifts(self):
-        return torch.randn(self.imageHight-1)*self.maxJitter
+        return torch.randn(self.imageHight-1, dtype=torch.float32)*self.maxJitter
 
     
     def shiftImage(self, image, shifts):
@@ -40,7 +40,7 @@ class ImageGenerator(object):
         for i, shift in enumerate(totalShifts):
             shiftedImage[i,:] = ndimg.shift(image[i,:], shift, output=None, order=3,
                                    cval=0.0, mode="wrap", prefilter=True)
-        return torch.from_numpy(shiftedImage)
+        return torch.from_numpy(shiftedImage).type(torch.float32)
 
     def unshiftImage(self, image, shifts):
         if len(image.shape) < 2:
@@ -57,7 +57,7 @@ class ImageGenerator(object):
         for i, shift in enumerate(totalShifts):
             shiftedImage[i,:] = ndimg.shift(image[i,:], -shift, output=None, order=3,
                                    cval=0.0, mode="wrap", prefilter=True)
-        return torch.from_numpy(shiftedImage)
+        return torch.from_numpy(shiftedImage).type(torch.float32)
 
 def test():
 
