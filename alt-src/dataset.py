@@ -42,7 +42,7 @@ if __name__ == "__main__":
     loader = DataLoader(dataset, batch_size=5)
     # sys.exit()
     for x, y in loader:
-        
+        print(type(x), type(y))        
         save_image(x, "images/Jittered.png")
         save_image(y, "images/Unjittered.png")
 
