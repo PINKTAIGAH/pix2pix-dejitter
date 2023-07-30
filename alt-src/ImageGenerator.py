@@ -4,6 +4,7 @@ import torch
 import config
 import utils
 import matplotlib.pyplot as plt
+from torchvision.utils import save_image
 
 class ImageGenerator(object):
 
@@ -66,13 +67,19 @@ def test():
     shifts = filter.generateShifts()
     shiftedImage = filter.shiftImage(groundTruth, shifts)
 
+    groundTruth = torch.unsqueeze(groundTruth, 0)
+    whiteNoise = torch.unsqueeze(whiteNoise, 0)
+    shiftedImage = torch.unsqueeze(shiftedImage, 0)
+
     whiteNoise = utils.normaliseTensor(whiteNoise)
     shiftedImage = utils.normaliseTensor(shiftedImage)
     groundTruth = utils.normaliseTensor(groundTruth)
 
+    save_image(shiftedImage, "test.png", )
+
     fig, (ax1,ax2) = plt.subplots(1,2)
-    ax1.imshow(groundTruth)
-    ax2.imshow(shiftedImage)
+    ax1.imshow(groundTruth[0])
+    ax2.imshow(shiftedImage[0])
     print(whiteNoise.min().item(), whiteNoise.max().item())
     print(groundTruth.min().item(), groundTruth.max().item())
     print(shifts)

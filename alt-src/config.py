@@ -1,11 +1,15 @@
 from skimage.filters import gaussian
 import numpy as np
 import torch
-import utils
-import albumentations as A
-from albumentations.pytorch import ToTensorV2
 from torch.utils.tensorboard.writer import SummaryWriter
 from torchvision.transforms import transforms
+
+
+def normalise(x):
+    if np.sum(x) == 0:
+        raise Exception("Divided by zero. Attempted to normalise a zero tensor")
+
+    return x/np.sum(x**2)
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 TRAIN_DIR = "data/train"
@@ -37,27 +41,7 @@ SOBEL_KERNAL = torch.tensor(
 
 kernal = np.zeros((IMAGE_SIZE, IMAGE_SIZE))
 kernal[IMAGE_SIZE//2, IMAGE_SIZE//2] = 1
-PSF = torch.from_numpy(utils.normalise(gaussian(kernal, SIGMA)))
-
-both_transform = A.Compose(
-    [A.Resize(width=256, height=256),], additional_targets={"image0": "image"},
-)
-
-transform_only_input = A.Compose(
-    [
-        A.HorizontalFlip(p=0.5),
-        A.ColorJitter(p=0.2),
-        A.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5], max_pixel_value=255.0,),
-        ToTensorV2(),
-    ]
-)
-
-transform_only_mask = A.Compose(
-    [
-        A.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5], max_pixel_value=255.0,),
-        ToTensorV2(),
-    ]
-)
+PSF = torch.from_numpy(normalise(gaussian(kernal, SIGMA)))
 
 transforms = transforms.Compose([
     transforms.Normalize(
