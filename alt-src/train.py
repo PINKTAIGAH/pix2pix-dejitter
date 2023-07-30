@@ -82,7 +82,7 @@ def main():
             config.CHECKPOINT_DISC, disc, opt_disc, config.LEARNING_RATE,
         )
 
-    train_dataset = JitteredDataset(config.IMAGE_SIZE, config.IMAGE_JITTER, length=1000) 
+    train_dataset = JitteredDataset(config.IMAGE_SIZE, 1000, config.MAX_JITTER) 
     train_loader = DataLoader(
         train_dataset,
         batch_size=config.BATCH_SIZE,
@@ -91,15 +91,13 @@ def main():
     )
     g_scaler = torch.cuda.amp.GradScaler()
     d_scaler = torch.cuda.amp.GradScaler()
-    val_dataset = JitteredDataset(config.IMAGE_SIZE, config.IMAGE_JITTER,
-            length=500) 
+    val_dataset = JitteredDataset(config.IMAGE_SIZE, 500, config.MAX_JITTER) 
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
 
     for epoch in range(config.NUM_EPOCHS):
         train_fn(
             disc, gen, train_loader, opt_disc, opt_gen, L1_LOSS, BCE,
-            g_scaler, d_scaler, opt_disc, opt_gen,
-        )
+            g_scaler, d_scaler,)
 
         if config.SAVE_MODEL and epoch % 5 == 0:
             save_checkpoint(gen, opt_gen, filename=config.CHECKPOINT_GEN)
