@@ -28,8 +28,8 @@ LOAD_MODEL = False
 SAVE_MODEL = True
 CHECKPOINT_DISC = "/home/brunicam/myscratch/p3_sratch/pix2pix_models/disc.pth.tar"
 CHECKPOINT_GEN = "/home/brunicam/myscratch/p3_sratch/pix2pix_models/gen.pth.tar"
-WRITER_REAL = SummaryWriter("~/myscratch/p3_scratch/runs/real")
-WRITER_FAKE = SummaryWriter("~/myscratch/p3_scratch/runs/fake")
+WRITER_REAL = SummaryWriter("/home/brunicam/myscratch/p3_scratch/runs/real")
+WRITER_FAKE = SummaryWriter("/home/brunicam/myscratch/p3_scratch/runs/fake")
 SOBEL_KERNAL = torch.tensor(
     [
         [-1, 0, 1],
