@@ -91,7 +91,8 @@ def main():
     )
     g_scaler = torch.cuda.amp.GradScaler()
     d_scaler = torch.cuda.amp.GradScaler()
-    val_dataset = JitteredDataset(config.IMAGE_SIZE, config.IMAGE_JITTER, length=1000) 
+    val_dataset = JitteredDataset(config.IMAGE_SIZE, config.IMAGE_JITTER,
+            length=500) 
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
 
     for epoch in range(config.NUM_EPOCHS):

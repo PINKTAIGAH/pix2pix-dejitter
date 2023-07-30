@@ -27,10 +27,10 @@ MAX_JITTER = 2
 NUM_EPOCHS = 500
 LOAD_MODEL = False 
 SAVE_MODEL = True
-CHECKPOINT_DISC = "disc.pth.tar"
-CHECKPOINT_GEN = "gen.pth.tar"
-WRITER_REAL = SummaryWriter("runs/real")
-WRITER_FAKE = SummaryWriter("runs/fake")
+CHECKPOINT_DISC = "/home/brunicam/myscratch/p3_sratch/pix2pix_Models/disc.pth.tar"
+CHECKPOINT_GEN = "/home/brunicam/myscratch/p3_sratch/pix2pix_Models/gen.pth.tar"
+WRITER_REAL = SummaryWriter("~/myscratch/p3_scratch/runs/real")
+WRITER_FAKE = SummaryWriter("~/myscratch/p3_scratch/runs/fake")
 SOBEL_KERNAL = torch.tensor(
     [
         [-1, 0, 1],
