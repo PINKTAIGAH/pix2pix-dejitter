@@ -84,7 +84,7 @@ def test():
     shifts = filter.generateShifts()
     shiftsVertical = filter.generateShifts()
     shiftedImage = filter.shiftImage(groundTruth, shifts)
-    shiftedImagesVertical = filter.verticalShiftImage(groundTruth,
+    shiftedImageVertical = filter.verticalShiftImage(groundTruth,
             shiftsVertical)
 
     groundTruth = torch.unsqueeze(groundTruth, 0)
