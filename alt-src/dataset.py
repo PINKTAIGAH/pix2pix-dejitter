@@ -20,7 +20,10 @@ class JitteredDataset(Dataset):
 
         groundTruth, whiteNoise = self.filter.generateGroundTruth()
         shifts = self.filter.generateShifts()
+        shiftesVertical = self.filter.generateShifts()
         shiftedImage = self.filter.shiftImage(groundTruth, shifts)
+        shiftedImage = self.filter.VerticalShiftImage(shiftedImage,
+                shiftsVertical)
 
         groundTruth = torch.unsqueeze(groundTruth, 0)
         whiteNoise = torch.unsqueeze(whiteNoise, 0)
