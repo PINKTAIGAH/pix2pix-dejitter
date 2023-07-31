@@ -22,7 +22,7 @@ class JitteredDataset(Dataset):
         shifts = self.filter.generateShifts()
         shiftesVertical = self.filter.generateShifts()
         shiftedImage = self.filter.shiftImage(groundTruth, shifts)
-        shiftedImage = self.filter.VerticalShiftImage(shiftedImage,
+        shiftedImage = self.filter.verticalShiftImage(shiftedImage,
                 shiftsVertical)
 
         groundTruth = torch.unsqueeze(groundTruth, 0)
