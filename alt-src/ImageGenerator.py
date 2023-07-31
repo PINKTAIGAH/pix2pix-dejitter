@@ -42,6 +42,23 @@ class ImageGenerator(object):
                                    cval=0.0, mode="wrap", prefilter=True)
         return torch.from_numpy(shiftedImage).type(torch.float32)
 
+    def verticalShiftImage(self, image, shifts):
+        if len(image.shape) < 2:
+            raise Exception("Can only tensors with a minimum of 2 dimentions") 
+
+        totalShifts = torch.hstack([torch.tensor([0]), torch.cumsum(shifts, dim=0)])
+        imageHight, imageWidth = image.shape[-2:]
+        shiftedImage = torch.zeros_like(image)
+
+        image = image.numpy() 
+        shiftedImage = shiftedImage.numpy()
+        totalShifts = totalShifts.numpy()
+
+        for i, shift in enumerate(totalShifts):
+            shiftedImage[:,i] = ndimg.shift(image[:, i], shift, output=None, order=3,
+                                   cval=0.0, mode="wrap", prefilter=True)
+        return torch.from_numpy(shiftedImage).type(torch.float32)
+
     def unshiftImage(self, image, shifts):
         if len(image.shape) < 2:
             raise Exception("Can only tensors with a minimum of 2 dimentions") 
@@ -65,20 +82,25 @@ def test():
 
     groundTruth, whiteNoise = filter.generateGroundTruth()
     shifts = filter.generateShifts()
+    shiftsVertical = filter.generateShifts()
     shiftedImage = filter.shiftImage(groundTruth, shifts)
+    shiftedImagesVertical = filter.verticalShiftImage(groundTruth,
+            shiftsVertical)
 
     groundTruth = torch.unsqueeze(groundTruth, 0)
     whiteNoise = torch.unsqueeze(whiteNoise, 0)
     shiftedImage = torch.unsqueeze(shiftedImage, 0)
+    shiftedImageVertical = torch.unsqueeze(shiftedImageVertical, 0)
 
     whiteNoise = utils.normaliseTensor(whiteNoise)
     shiftedImage = utils.normaliseTensor(shiftedImage)
     groundTruth = utils.normaliseTensor(groundTruth)
+    shiftedImageVertical = utils.normaliseTensor(shiftedImageVertical)
 
     save_image(shiftedImage, "test.png", )
 
     fig, (ax1,ax2) = plt.subplots(1,2)
-    ax1.imshow(groundTruth[0])
+    ax1.imshow(shiftedImageVertical[0])
     ax2.imshow(shiftedImage[0])
     print(whiteNoise.min().item(), whiteNoise.max().item())
     print(groundTruth.min().item(), groundTruth.max().item())
