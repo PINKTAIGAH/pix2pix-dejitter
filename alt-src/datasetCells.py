@@ -16,7 +16,7 @@ class dataclass(Dataset):
         self.maxJitter = maxJitter
         self.filter = ImageGenerator(config.PSF, config.MAX_JITTER, 28)
         self.transform = transform
-        self.dataset = PCAM("/home/giorgio/Desktop/", download=True,
+        self.dataset = PCAM("/home/brunicam/myscratch/p3_scratch", download=True,
                        transform=self.transform)
 
     def __len__(self):
@@ -32,8 +32,13 @@ class dataclass(Dataset):
 
 
         shiftedImage = torch.unsqueeze(shiftedImage, 0)
+        groundTruth = torch.unsqueeze(groundTruth, 0)
+
         shiftedImage = utils.normaliseTensor(shiftedImage)
+        groundTruth = utils.normaliseTensor(groundTruth)
+        
         shiftedImage = config.transforms(shiftedImage)
+        groundTruth = config.transforms(groundTruth)
 
         return shiftedImage, groundTruth 
 
