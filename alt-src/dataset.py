@@ -20,23 +20,24 @@ class JitteredDataset(Dataset):
 
         groundTruth, whiteNoise = self.filter.generateGroundTruth()
         shifts = self.filter.generateShifts()
-        #shiftsVertical = self.filter.generateShifts()
+        shiftsVertical = self.filter.generateShifts()
         shiftedImage = self.filter.shiftImage(groundTruth, shifts)
-        #shiftedImage = self.filter.verticalShiftImage(shiftedImage,
-        #        shiftsVertical)
+        shiftedImageVertical = self.filter.verticalShiftImage(shiftedImage,
+                                                      shiftsVertical)
 
         groundTruth = torch.unsqueeze(groundTruth, 0)
-        whiteNoise = torch.unsqueeze(whiteNoise, 0)
         shiftedImage = torch.unsqueeze(shiftedImage, 0)
+        shiftedImageVertical = torch.unsqueeze(shiftedImageVertical, 0)
 
-        whiteNoise = utils.normaliseTensor(whiteNoise)
         shiftedImage = utils.normaliseTensor(shiftedImage)
+        shiftedImageVertical = utils.normaliseTensor(shiftedImageVertical)
         groundTruth = utils.normaliseTensor(groundTruth)
 
         shiftedImage = config.transforms(shiftedImage)
         groundTruth = config.transforms(groundTruth)
+        shiftedImageVertical = config.transforms(shiftedImageVertical)
 
-        return shiftedImage, groundTruth
+        return shiftedImageVertical, groundTruth
 
 if __name__ == "__main__":
 

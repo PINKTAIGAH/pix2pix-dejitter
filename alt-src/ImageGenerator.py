@@ -84,7 +84,7 @@ def test():
     shifts = filter.generateShifts()
     shiftsVertical = filter.generateShifts()
     shiftedImage = filter.shiftImage(groundTruth, shifts)
-    shiftedImageVertical = filter.verticalShiftImage(groundTruth,
+    shiftedImageVertical = filter.verticalShiftImage(shiftedImage,
             shiftsVertical)
 
     groundTruth = torch.unsqueeze(groundTruth, 0)
@@ -99,12 +99,13 @@ def test():
 
     save_image(shiftedImage, "test.png", )
 
-    fig, (ax1,ax2) = plt.subplots(1,2)
-    ax1.imshow(shiftedImageVertical[0])
+    fig, (ax1,ax2, ax3) = plt.subplots(1,3)
+    ax3.imshow(shiftedImageVertical[0])
     ax2.imshow(shiftedImage[0])
-    print(whiteNoise.min().item(), whiteNoise.max().item())
-    print(groundTruth.min().item(), groundTruth.max().item())
-    print(shifts)
+    ax1.imshow(groundTruth[0])
+    # print(whiteNoise.min().item(), whiteNoise.max().item())
+    # print(groundTruth.min().item(), groundTruth.max().item())
+    print(shifts.min().item(), shifts.max().item())
     plt.show()
 
     
