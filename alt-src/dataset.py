@@ -1,4 +1,3 @@
-import sys
 import torch
 import utils
 import config
@@ -44,7 +43,7 @@ if __name__ == "__main__":
     N = 256 
     dataset = JitteredDataset(N, 20, 2)
     loader = DataLoader(dataset, batch_size=5)
-    # sys.exit()
+
     for x, y in loader:
         print(x.dtype, y.dtype)        
         save_image(x, "images/Jittered.png")

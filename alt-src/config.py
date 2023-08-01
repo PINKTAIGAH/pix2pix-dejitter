@@ -2,7 +2,7 @@ from skimage.filters import gaussian
 import numpy as np
 import torch
 from torch.utils.tensorboard.writer import SummaryWriter
-from torchvision.transforms import transforms
+from torchvision.transforms import transforms as transform
 
 
 def normalise(x):
@@ -17,12 +17,12 @@ VAL_DIR = "data/val"
 LEARNING_RATE = 2e-4
 BATCH_SIZE = 16
 NUM_WORKERS = 2
-IMAGE_SIZE = 256
+IMAGE_SIZE = 96
 SIGMA = 10 
 CHANNELS_IMG = 1 
 L1_LAMBDA = 100
 LAMBDA_GP = 10
-MAX_JITTER = 1.7 
+MAX_JITTER = 1.5 
 NUM_EPOCHS = 500
 LOAD_MODEL = False 
 SAVE_MODEL = True
@@ -42,9 +42,14 @@ kernal = np.zeros((IMAGE_SIZE, IMAGE_SIZE))
 kernal[IMAGE_SIZE//2, IMAGE_SIZE//2] = 1
 PSF = torch.from_numpy(normalise(gaussian(kernal, SIGMA)))
 
-transforms = transforms.Compose([
-    transforms.Normalize(
+transforms = transform.Compose([
+    transform.Normalize(
         [0.5 for _ in range(CHANNELS_IMG)],   # generalise for multi channel
         [0.5 for _ in range(CHANNELS_IMG)],
     ),
+])
+
+transformsPcam = transform.Compose([
+    transform.ToTensor(),
+    transform.Grayscale(),
 ])
