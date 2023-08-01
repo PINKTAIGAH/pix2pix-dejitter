@@ -11,8 +11,9 @@ from torchvision.utils import save_image
 
 class dataclass(Dataset):
 
-    def __init__(self, imageSize, maxJitter, transform, ):
+    def __init__(self, imageSize, length, maxJitter, transform, ):
         self.N = imageSize 
+        self.length = length
         self.maxJitter = maxJitter
         self.filter = ImageGenerator(config.PSF, config.MAX_JITTER, 28)
         self.transform = transform
@@ -20,7 +21,7 @@ class dataclass(Dataset):
                        transform=self.transform)
 
     def __len__(self):
-        return len(self.dataset) 
+        return self.length 
 
     def __getitem__(self, idx):
         
@@ -39,17 +40,19 @@ class dataclass(Dataset):
         
         shiftedImage = config.transforms(shiftedImage)
         groundTruth = config.transforms(groundTruth)
+        
+        print(shiftedImage.shape, groundTruth.shape)
 
         return shiftedImage, groundTruth 
 
 
 
 def test():
-    filter = dataclass(None, None, config.transformsPcam)
-    x, y = filter[1]
+    filter = dataclass(96, 10, 1.0, config.transformsPcam)
+    x, y = filter[3]
 
     save_image(x, "images/x.png")
-    save_image(y, "images/y.png")
+    save_image(y-x, "images/y.png")
     
 if __name__ == "__main__":
     test()
