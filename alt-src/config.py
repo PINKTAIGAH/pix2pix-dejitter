@@ -17,7 +17,7 @@ VAL_DIR = "data/val"
 LEARNING_RATE = 2e-4
 BATCH_SIZE = 16
 NUM_WORKERS = 2
-IMAGE_SIZE = 96
+IMAGE_SIZE = 256
 SIGMA = 10 
 CHANNELS_IMG = 1 
 L1_LAMBDA = 100
@@ -49,7 +49,7 @@ transforms = transform.Compose([
     ),
 ])
 
-transformsPcam = transform.Compose([
+transformsCell = transform.Compose([
     transform.ToTensor(),
     transform.Grayscale(),
 ])
