@@ -84,11 +84,8 @@ def main():
         )
 
     # train_dataset = JitteredDataset(config.IMAGE_SIZE, 1000, config.MAX_JITTER) 
-    train_dataset = CellDataset("/home/giorgio/Desktop/cell_dataset/train/", config.IMAGE_SIZE,
+    train_dataset = CellDataset(config.TRAIN_DIR, config.IMAGE_SIZE,
                                 config.MAX_JITTER, config.transformsCell) 
-
-    # train_dataset = CellDataset("/home/brunicam/myscratch/p3_scratch/cell_dataset/train/", config.IMAGE_SIZE,
-                                # config.MAX_JITTER, config.transformsCell) 
     
     train_loader = DataLoader(
         train_dataset,
@@ -99,11 +96,8 @@ def main():
     g_scaler = torch.cuda.amp.GradScaler()
     d_scaler = torch.cuda.amp.GradScaler()
     # val_dataset = JitteredDataset(config.IMAGE_SIZE, 500, config.MAX_JITTER) 
-    val_dataset = CellDataset("/home/giorgio/Desktop/cell_dataset/train/", config.IMAGE_SIZE,
+    val_dataset = CellDataset(config.VAL_DIR, config.IMAGE_SIZE,
                                 config.MAX_JITTER, config.transformsCell) 
-
-    # val_dataset = CellDataset("/home/brunicam/myscratch/p3_scratch/cell_dataset/train/", config.IMAGE_SIZE,
-                                # config.MAX_JITTER, config.transformsCell) 
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
 
     for epoch in range(config.NUM_EPOCHS):

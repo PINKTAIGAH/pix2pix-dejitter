@@ -12,8 +12,10 @@ def normalise(x):
     return x/np.sum(x**2)
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-TRAIN_DIR = "data/train"
-VAL_DIR = "data/val"
+TRAIN_DIR = "/home/giorgio/Desktop/cell_dataset/train/"
+# TRAIN_DIR = "/home/brunicam/myscratch/p3_scatch/cell_dataset/train/"
+VAL_DIR = "/home/giorgio/Desktop/cell_dataset/val/"
+# VAL_DIR = "/home/brunicam/myscratch/p3_scatch/cell_dataset/val/"
 LEARNING_RATE = 2e-4
 BATCH_SIZE = 16
 NUM_WORKERS = 2

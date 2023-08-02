@@ -50,7 +50,7 @@ class CellDataset(Dataset):
         return shiftedImage, groundTruth
 
 def test():
-    dataset = CellDataset("/home/giorgio/Desktop/cell_dataset/val",
+    dataset = CellDataset(config.VAL_DIR,
                           config.IMAGE_SIZE, config.MAX_JITTER, config.transformsCell)
     x, y = dataset[3]
 
