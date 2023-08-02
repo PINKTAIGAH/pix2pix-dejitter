@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.optim as optim
 import config
 from dataset import JitteredDataset  
+from datasetCells import dataclass
 from generator import Generator
 from discriminator import Discriminator
 from torch.utils.data import DataLoader
@@ -82,7 +83,8 @@ def main():
             config.CHECKPOINT_DISC, disc, opt_disc, config.LEARNING_RATE,
         )
 
-    train_dataset = JitteredDataset(config.IMAGE_SIZE, 1000, config.MAX_JITTER) 
+    # train_dataset = JitteredDataset(config.IMAGE_SIZE, 1000, config.MAX_JITTER) 
+    train_dataset = dataclass(config.IMAGE_SIZE, 1000, config.MAX_JITTER, config.transformsPcam) 
     train_loader = DataLoader(
         train_dataset,
         batch_size=config.BATCH_SIZE,
@@ -91,7 +93,8 @@ def main():
     )
     g_scaler = torch.cuda.amp.GradScaler()
     d_scaler = torch.cuda.amp.GradScaler()
-    val_dataset = JitteredDataset(config.IMAGE_SIZE, 500, config.MAX_JITTER) 
+    # val_dataset = JitteredDataset(config.IMAGE_SIZE, 500, config.MAX_JITTER) 
+    val_dataset = dataclass(config.IMAGE_SIZE, 500, config.MAX_JITTER, config.transformsPcam) 
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
 
     for epoch in range(config.NUM_EPOCHS):
