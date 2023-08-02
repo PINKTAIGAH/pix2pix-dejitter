@@ -12,10 +12,10 @@ def normalise(x):
     return x/np.sum(x**2)
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-TRAIN_DIR = "/home/giorgio/Desktop/cell_dataset/train/"
-# TRAIN_DIR = "/home/brunicam/myscratch/p3_scatch/cell_dataset/train/"
-VAL_DIR = "/home/giorgio/Desktop/cell_dataset/val/"
-# VAL_DIR = "/home/brunicam/myscratch/p3_scatch/cell_dataset/val/"
+#TRAIN_DIR = "/home/giorgio/Desktop/cell_dataset/train/"
+TRAIN_DIR = "/home/brunicam/myscratch/p3_scratch/cell_dataset/train/"
+#VAL_DIR = "/home/giorgio/Desktop/cell_dataset/val/"
+VAL_DIR = "/home/brunicam/myscratch/p3_scratch/cell_dataset/val/"
 LEARNING_RATE = 2e-4
 BATCH_SIZE = 16
 NUM_WORKERS = 2
@@ -32,13 +32,6 @@ CHECKPOINT_DISC = "disc.pth.tar"
 CHECKPOINT_GEN = "gen.pth.tar"
 WRITER_REAL = SummaryWriter("runs/real")
 WRITER_FAKE = SummaryWriter("runs/fake")
-SOBEL_KERNAL = torch.tensor(
-    [
-        [-1, 0, 1],
-        [-2, 0, 2],
-        [-1, 0, 1]
-    ], dtype=torch.float32
-)
 
 kernal = np.zeros((IMAGE_SIZE, IMAGE_SIZE))
 kernal[IMAGE_SIZE//2, IMAGE_SIZE//2] = 1
