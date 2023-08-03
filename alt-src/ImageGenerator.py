@@ -77,7 +77,11 @@ class ImageGenerator(object):
                                    cval=0.0, mode="wrap", prefilter=True)
         return torch.from_numpy(shiftedImage).type(torch.float32)
 
-    def newShiftImageHorizontal(self, input, shifts):
+    def newShiftImageHorizontal(self, input, shifts, isBatch=True):
+        if not isBatch:
+            input = torch.unsqueeze(input, 0)
+            shifts = torch.unsqueeze(shifts, 0)
+
         if len(input.shape) != 4:
             raise Exception("Input image must be of dimention 4: (B, C, H, W)")
         if len(shifts.shape) !=3:
@@ -95,7 +99,7 @@ class ImageGenerator(object):
                                                align_corners=True)
         return output
     
-    def newShiftImageHorizontal(self, input, shifts):
+    def newShiftImageVertical(self, input, shifts):
         if len(input.shape) != 4:
             raise Exception("Input image must be of dimention 4: (B, C, H, W)")
         if len(shifts.shape) !=3:
