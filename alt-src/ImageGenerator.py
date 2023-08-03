@@ -25,6 +25,15 @@ class ImageGenerator(object):
     def generateShifts(self):
         return torch.randn(self.imageHight-1, dtype=torch.float32)*self.maxJitter
 
+    def generateShiftsHorizontal(self):
+        shiftX = torch.randn((config.IMAGE_SIZE, 1))
+        shiftY = torch.zeros_like(shiftX)
+        return torch.cat([shiftX, shiftY], 1) * config.MAX_JITTER
+
+    def generateShiftsVertical(self):
+        shiftY = torch.randn((config.IMAGE_SIZE, 1))
+        shiftX = torch.zeros_like(shiftY)
+        return torch.cat([shiftX, shiftY], 1) * config.MAX_JITTER
     
     def shiftImage(self, image, shifts):
         if len(image.shape) < 2:

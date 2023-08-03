@@ -42,13 +42,6 @@ def tensorConcatinate(tensorLeft, tensorRight):
     tensorLeft = tensorLeft.view(-1, tensorLeft.shape[-1])
     return torch.cat((tensorLeft, tensorRight), dim=1) 
 
-def verticalEdges(inputTensor):
-    print(inputTensor.shape)
-    print(config.SOBEL_KERNAL.shape)
-    return F.conv2d(inputTensor.reshape(1, 1, *inputTensor.shape),
-                    config.SOBEL_KERNAL.reshape(1, 1, *config.SOBEL_KERNAL.shape),
-                    padding="same")
-
 def findMin(tensor):
     N = tensor.shape[-1]
     minVals, _ = tensor.view(-1, N*N).min(axis=1)
