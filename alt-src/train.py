@@ -66,8 +66,10 @@ def train_fn(
 #            config.WRITER_FAKE.add_image("fake", imageGridFake, global_step=step)
 #
 #            step +=1
+
     d_scaler.step(schedular_disc)
     g_scaler.step(schedular_gen)
+    return D_loss, G_loss
 
 def main():
     disc = Discriminator(in_channels=config.CHANNELS_IMG).to(config.DEVICE)
@@ -112,7 +114,7 @@ def main():
                                                          verbose=True)
 
     for epoch in range(config.NUM_EPOCHS):
-        train_fn(
+        D_loss, G_loss = train_fn(
             disc, gen, train_loader, opt_disc, opt_gen, L1_LOSS, BCE, schedular_disc,
             schedular_gen, g_scaler, d_scaler,)
 
@@ -122,6 +124,10 @@ def main():
 
         save_some_examples(gen, val_loader, epoch, folder="evaluation")
                 
+        with open("raw_data/disc_loss.txt", "w") as f:
+            f.write(f"{D_loss.mean().item():.4f}")
+        with open("raw_data/gen_loss.txt", "w") as f:
+            f.write(f"{G_loss.mean().item():.4f}")
 
 if __name__ == "__main__":
     main()
