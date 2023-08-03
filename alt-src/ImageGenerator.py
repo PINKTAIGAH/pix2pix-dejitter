@@ -5,6 +5,7 @@ import config
 import utils
 import matplotlib.pyplot as plt
 from torchvision.utils import save_image
+from kornia.geometry.transform import translate
 
 class ImageGenerator(object):
 
@@ -75,6 +76,42 @@ class ImageGenerator(object):
             shiftedImage[i,:] = ndimg.shift(image[i,:], -shift, output=None, order=3,
                                    cval=0.0, mode="wrap", prefilter=True)
         return torch.from_numpy(shiftedImage).type(torch.float32)
+
+    def newShiftImageHorizontal(self, input, shifts):
+        if len(input.shape) != 4:
+            raise Exception("Input image must be of dimention 4: (B, C, H, W)")
+        if len(shifts.shape) !=3:
+            raise Exception("Shifts must be of the shape (B, H, 2)")
+
+        B, _, H, _ = input.shape
+        output = torch.zeros_like(input)
+        for i in range(B):
+            singleImage = torch.unsqueeze(torch.clone(input[i]),0)
+            singleShift = torch.clone(shifts[i])
+            for j in range(H):
+                output[i, :, j, :] = translate(singleImage[:, :, j, :],
+                                               torch.unsqueeze(singleShift[j], 0),
+                                               padding_mode="reflection",
+                                               align_corners=True)
+        return output
+    
+    def newShiftImageHorizontal(self, input, shifts):
+        if len(input.shape) != 4:
+            raise Exception("Input image must be of dimention 4: (B, C, H, W)")
+        if len(shifts.shape) !=3:
+            raise Exception("Shifts must be of the shape (B, H, 2)")
+
+        B, _, _, W = input.shape
+        output = torch.zeros_like(input)
+        for i in range(B):
+            singleImage = torch.unsqueeze(torch.clone(input[i]),0)
+            singleShift = torch.clone(shifts[i])
+            for j in range(W):
+                output[i, :, :, j] = translate(singleImage[:, :, :, j],
+                                               torch.unsqueeze(singleShift[j], 0),
+                                               padding_mode="reflection",
+                                               align_corners=True)
+        return output
 
 def test():
 
