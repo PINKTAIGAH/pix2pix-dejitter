@@ -49,7 +49,6 @@ if __name__ == "__main__":
     filter = ImageGenerator(config.PSF, config.MAX_JITTER, config.IMAGE_SIZE,)
 
     for x, y, shifts in loader:
-        print(x.shape, y.shape, shifts.shape)
         z = filter.newShiftImageHorizontal(x, -shifts, isBatch=True)
 
         save_image(x, "images/Jittered.png")

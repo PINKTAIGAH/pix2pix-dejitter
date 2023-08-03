@@ -105,7 +105,7 @@ class ImageGenerator(object):
                 output[i, :, j, :] = translate(singleImage[:, :, j, :],
                                                torch.unsqueeze(singleShift[j], 0),
                                                padding_mode="reflection",
-                                               align_corners=True)
+                                               align_corners=False)
         return output
     
     def newShiftImageVertical(self, input, shifts):
@@ -123,7 +123,7 @@ class ImageGenerator(object):
                 output[i, :, :, j] = translate(singleImage[:, :, :, j],
                                                torch.unsqueeze(singleShift[j], 0),
                                                padding_mode="reflection",
-                                               align_corners=True)
+                                               align_corners=False)
         return output
 
 def test():
