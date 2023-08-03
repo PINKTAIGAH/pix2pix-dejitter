@@ -15,8 +15,8 @@ torch.backends.cudnn.benchmark = True
 
 
 def train_fn(
-    disc, gen, loader, opt_disc, opt_gen, l1_loss, bce, 
-    g_scaler, d_scaler,
+    disc, gen, loader, opt_disc, opt_gen, l1_loss, bce, schedular_disc, 
+    schedular_gen, g_scaler, d_scaler,
     ):
     loop = tqdm(loader, leave=True)
     step = 0
@@ -66,6 +66,8 @@ def train_fn(
 #            config.WRITER_FAKE.add_image("fake", imageGridFake, global_step=step)
 #
 #            step +=1
+    d_scaler.step(schedular_disc)
+    g_scaler.step(schedular_gen)
 
 def main():
     disc = Discriminator(in_channels=config.CHANNELS_IMG).to(config.DEVICE)
@@ -99,11 +101,20 @@ def main():
     val_dataset = CellDataset(config.VAL_DIR, config.IMAGE_SIZE,
                                 config.MAX_JITTER, config.transformsCell) 
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
+    
+    schedular_disc = optim.lr_scheduler.ReduceLROnPlateau(opt_disc, mode="min",
+                                                          factor=config.SCHEDULAR_DECAY,
+                                                          patience=config.SCHEDULAR_PATIENCE,
+                                                          verbose=True)
+    schedular_gen = optim.lr_scheduler.ReduceLROnPlateau(opt_gen, mode="min",
+                                                         factor=config.SCHEDULAR_DECAY,
+                                                         patience=config.SCHEDULAR_PATIENCE,
+                                                         verbose=True)
 
     for epoch in range(config.NUM_EPOCHS):
         train_fn(
-            disc, gen, train_loader, opt_disc, opt_gen, L1_LOSS, BCE,
-            g_scaler, d_scaler,)
+            disc, gen, train_loader, opt_disc, opt_gen, L1_LOSS, BCE, schedular_disc,
+            schedular_gen, g_scaler, d_scaler,)
 
         if config.SAVE_MODEL and epoch % 5 == 0:
             save_checkpoint(gen, opt_gen, filename=config.CHECKPOINT_GEN)
