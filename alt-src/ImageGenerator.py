@@ -98,6 +98,7 @@ def test():
     shiftedImageVertical = utils.normaliseTensor(shiftedImageVertical)
 
     save_image(shiftedImage, "test.png", )
+    print(shifts)
 
     fig, (ax1,ax2, ax3) = plt.subplots(1,3)
     ax3.imshow(shiftedImageVertical[0])

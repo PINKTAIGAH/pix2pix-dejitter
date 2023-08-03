@@ -1,5 +1,5 @@
 import torch
-import sys 
+import sys
 import config
 from time import time
 import numpy as np
@@ -54,11 +54,11 @@ loader = DataLoader(dataset, batch_size=3, )
 
 _, x = next(iter(loader))
 B, C, H, W = x.shape
-shifts = torch.rand((B, H, 1))
-shifts = torch.cat([shifts, torch.zeros_like(shifts)], 2) * 25
+shifts = torch.randn((B, H, 1))
+shifts = torch.cat([shifts, torch.zeros_like(shifts)], 2) * config.MAX_JITTER
 
 shifts2 = torch.rand((B, H, 1))
-shifts2 = torch.cat([shifts2, torch.zeros_like(shifts2)], 2) * 50
+shifts2 = torch.cat([shifts2, torch.zeros_like(shifts2)], 2) * config.MAX_JITTER
 
 t1=time()
 # y = shift(x, shifts)
