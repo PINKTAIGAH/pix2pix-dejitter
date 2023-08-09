@@ -16,6 +16,7 @@ torch.backends.cudnn.benchmark = True
 
 def train_fn(
     disc, gen, loader, opt_disc, opt_gen, l1_loss, bce, g_scaler, d_scaler,
+    epoch,
     ):
     loop = tqdm(loader, leave=True)
     step = 0
@@ -67,10 +68,10 @@ def train_fn(
             step +=1
     
     with torch.no_grad():
-        config.WRITER_REAL.add_scalar("discriminator real", torch.sigmoid(D_real).mean().item())
-        config.WRITER_FAKE.add_scalar("discriminator fake", torch.sigmoid(D_fake).mean().item())
-        config.WRITER_REAL.add_scalar("discriminator loss", D_loss.item())
-        config.WRITER_REAL.add_scalar("generator loss", G_loss.item())
+        config.WRITER_REAL.add_scalar("discriminator real", torch.sigmoid(D_real).mean().item(), epoch)
+        config.WRITER_FAKE.add_scalar("discriminator fake", torch.sigmoid(D_fake).mean().item(), epoch)
+        config.WRITER_REAL.add_scalar("discriminator loss", D_loss.item(), epoch)
+        config.WRITER_REAL.add_scalar("generator loss", G_loss.item(), epoch)
 
 
 def main():
@@ -120,7 +121,7 @@ def main():
     for epoch in range(config.NUM_EPOCHS):
         train_fn(
             disc, gen, train_loader, opt_disc, opt_gen, L1_LOSS, BCE,
-            g_scaler, d_scaler,)
+            g_scaler, d_scaler, epoch)
 
         if config.SAVE_MODEL and epoch % 5 == 0:
             save_checkpoint(gen, opt_gen, filename=config.CHECKPOINT_GEN)
