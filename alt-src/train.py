@@ -9,7 +9,7 @@ from generator import Generator
 from discriminator import Discriminator
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from torchvision.utils import save_image
+from torchvision.utils import save_image, make_grid
 
 torch.backends.cudnn.benchmark = True
 
@@ -18,7 +18,7 @@ def train_fn(
     disc, gen, loader, opt_disc, opt_gen, l1_loss, bce, g_scaler, d_scaler,
     ):
     loop = tqdm(loader, leave=True)
-    # step = 0
+    step = 0
 
     for idx, (x, y) in enumerate(loop):
         x = x.to(config.DEVICE)
@@ -56,17 +56,22 @@ def train_fn(
                 D_fake=torch.sigmoid(D_fake).mean().item(),
             )
 
-#        with torch.no_grad():
-#            fakeSample = generator(x) 
-#            imageGridReal = torchvision.utils.make_grid(y[:32], normalize=True)
-#            imageGridFake = torchvision.utils.make_grid(fakeSample[:32], normalize=True)
-#
-#            config.WRITER_REAL.add_image("real", imageGridReal, global_step=step)
-#            config.WRITER_FAKE.add_image("fake", imageGridFake, global_step=step)
-#
-#            step +=1
+        with torch.no_grad():
+            fakeSample = gen(x) 
+            imageGridReal = make_grid(y[:6], normalize=True)
+            imageGridFake = make_grid(fakeSample[:6], normalize=True)
 
-    return D_loss, G_loss
+            config.WRITER_REAL.add_image("real", imageGridReal, global_step=step)
+            config.WRITER_FAKE.add_image("fake", imageGridFake, global_step=step)
+
+            step +=1
+    
+    with torch.no_grad():
+        config.WRITER_REAL.add_scalar("discriminator real", torch.sigmoid(D_real).mean().item())
+        config.WRITER_FAKE.add_scalar("discriminator fake", torch.sigmoid(D_fake).mean().item())
+        config.WRITER_REAL.add_scalar("discriminator loss", D_loss.item())
+        config.WRITER_REAL.add_scalar("generator loss", G_loss.item())
+
 
 def main():
     disc = Discriminator(in_channels=config.CHANNELS_IMG).to(config.DEVICE)
@@ -113,7 +118,7 @@ def main():
     """
 
     for epoch in range(config.NUM_EPOCHS):
-        D_loss, G_loss = train_fn(
+        train_fn(
             disc, gen, train_loader, opt_disc, opt_gen, L1_LOSS, BCE,
             g_scaler, d_scaler,)
 
@@ -122,11 +127,6 @@ def main():
             save_checkpoint(disc, opt_disc, filename=config.CHECKPOINT_DISC)
 
         save_some_examples(gen, val_loader, epoch, folder="evaluation")
-                
-        with open("raw_data/disc_loss.txt", "w") as f:
-            f.write(f"{D_loss.mean().item():.4f}")
-        with open("raw_data/gen_loss.txt", "w") as f:
-            f.write(f"{G_loss.mean().item():.4f}")
 
 if __name__ == "__main__":
     main()
