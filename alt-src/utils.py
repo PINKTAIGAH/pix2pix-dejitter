@@ -63,6 +63,9 @@ def findMax(tensor):
 def normaliseTensor(tensor):
     return (tensor-findMin(tensor))/(findMax(tensor) - findMin(tensor))
 
+def adjustArray(array):
+    return (array) / (array.max() - array.min())
+
 def normalise(x):
     if np.sum(x) == 0:
         raise Exception("Divided by zero. Attempted to normalise a zero tensor")

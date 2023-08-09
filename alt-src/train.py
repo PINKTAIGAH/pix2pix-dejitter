@@ -15,11 +15,10 @@ torch.backends.cudnn.benchmark = True
 
 
 def train_fn(
-    disc, gen, loader, opt_disc, opt_gen, l1_loss, bce, schedular_disc, 
-    schedular_gen, g_scaler, d_scaler,
+    disc, gen, loader, opt_disc, opt_gen, l1_loss, bce, g_scaler, d_scaler,
     ):
     loop = tqdm(loader, leave=True)
-    step = 0
+    # step = 0
 
     for idx, (x, y) in enumerate(loop):
         x = x.to(config.DEVICE)
@@ -67,8 +66,6 @@ def train_fn(
 #
 #            step +=1
 
-    d_scaler.step(schedular_disc)
-    g_scaler.step(schedular_gen)
     return D_loss, G_loss
 
 def main():
@@ -87,9 +84,9 @@ def main():
             config.CHECKPOINT_DISC, disc, opt_disc, config.LEARNING_RATE,
         )
 
-    # train_dataset = JitteredDataset(config.IMAGE_SIZE, 1000, config.MAX_JITTER) 
-    train_dataset = CellDataset(config.TRAIN_DIR, config.IMAGE_SIZE,
-                                config.MAX_JITTER, config.transformsCell) 
+    train_dataset = JitteredDataset(config.IMAGE_SIZE, 1000) 
+    # train_dataset = CellDataset(config.TRAIN_DIR, config.IMAGE_SIZE,
+                                # config.MAX_JITTER, config.transformsCell) 
     
     train_loader = DataLoader(
         train_dataset,
@@ -99,11 +96,12 @@ def main():
     )
     g_scaler = torch.cuda.amp.GradScaler()
     d_scaler = torch.cuda.amp.GradScaler()
-    # val_dataset = JitteredDataset(config.IMAGE_SIZE, 500, config.MAX_JITTER) 
-    val_dataset = CellDataset(config.VAL_DIR, config.IMAGE_SIZE,
-                                config.MAX_JITTER, config.transformsCell) 
+    val_dataset = JitteredDataset(config.IMAGE_SIZE, 500,) 
+    # val_dataset = CellDataset(config.VAL_DIR, config.IMAGE_SIZE,
+                                # config.MAX_JITTER, config.transformsCell) 
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
     
+    """
     schedular_disc = optim.lr_scheduler.ReduceLROnPlateau(opt_disc, mode="min",
                                                           factor=config.SCHEDULAR_DECAY,
                                                           patience=config.SCHEDULAR_PATIENCE,
@@ -112,11 +110,12 @@ def main():
                                                          factor=config.SCHEDULAR_DECAY,
                                                          patience=config.SCHEDULAR_PATIENCE,
                                                          verbose=True)
+    """
 
     for epoch in range(config.NUM_EPOCHS):
         D_loss, G_loss = train_fn(
-            disc, gen, train_loader, opt_disc, opt_gen, L1_LOSS, BCE, schedular_disc,
-            schedular_gen, g_scaler, d_scaler,)
+            disc, gen, train_loader, opt_disc, opt_gen, L1_LOSS, BCE,
+            g_scaler, d_scaler,)
 
         if config.SAVE_MODEL and epoch % 5 == 0:
             save_checkpoint(gen, opt_gen, filename=config.CHECKPOINT_GEN)
