@@ -34,8 +34,8 @@ LOAD_MODEL = False
 SAVE_MODEL = True
 CHECKPOINT_DISC = "disc.pth.tar"
 CHECKPOINT_GEN = "gen.pth.tar"
-WRITER_REAL = SummaryWriter("../runs/real")
-WRITER_FAKE = SummaryWriter("../runs/fake")
+WRITER_REAL = SummaryWriter("/home/brunicam/myscratch/p3_scratch/runs/real")
+WRITER_FAKE = SummaryWriter("/home/brunicam/myscratch/p3_scratch/runs/fake")
 
 kernal = np.zeros((NOISE_SIZE, NOISE_SIZE))
 kernal[NOISE_SIZE//2, NOISE_SIZE//2] = 1
