@@ -56,7 +56,7 @@ def train_fn(
                 D_real=torch.sigmoid(D_real).mean().item(),
                 D_fake=torch.sigmoid(D_fake).mean().item(),
             )
-
+    """
         with torch.no_grad():
             fakeSample = gen(x) 
             imageGridReal = make_grid(y[:6], normalize=True)
@@ -73,7 +73,7 @@ def train_fn(
         config.WRITER_REAL.add_scalar("discriminator loss", D_loss.item(), epoch)
         config.WRITER_REAL.add_scalar("generator loss", G_loss.item(), epoch)
         config.WRITER_REAL.add_scalar("correlation", findCorrelation(gen, val_loader), epoch)
-
+    """
 
 def main():
     disc = Discriminator(in_channels=config.CHANNELS_IMG).to(config.DEVICE)
