@@ -18,7 +18,6 @@ def test():
     filter = ImageGenerator(config.PSF, config.IMAGE_SIZE, 
                             config.CORRELATION_LENGTH, config.PADDING_WIDTH)
 
-    
     _, img = dataset[0]
 
     maxJitterArray = np.arange(0, 9, 0.25) 
