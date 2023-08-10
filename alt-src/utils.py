@@ -71,3 +71,6 @@ def normalise(x):
         raise Exception("Divided by zero. Attempted to normalise a zero tensor")
 
     return x/np.sum(x**2)
+
+def corrImage(img1, img2):
+    return torch.sum((img1*img2)**2)/torch.sqrt((img1**2).torch() * (img2**2).sum())
