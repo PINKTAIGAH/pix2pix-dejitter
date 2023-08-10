@@ -1,5 +1,5 @@
 import torch
-from utils import save_checkpoint, load_checkpoint, save_some_examples
+from utils import save_checkpoint, load_checkpoint, save_some_examples, findCorrelation
 import torch.nn as nn
 import torch.optim as optim
 import config
@@ -16,7 +16,7 @@ torch.backends.cudnn.benchmark = True
 
 def train_fn(
     disc, gen, loader, opt_disc, opt_gen, l1_loss, bce, g_scaler, d_scaler,
-    epoch,
+    epoch, val_loader, 
     ):
     loop = tqdm(loader, leave=True)
     step = 0
@@ -72,6 +72,7 @@ def train_fn(
         config.WRITER_FAKE.add_scalar("discriminator fake", torch.sigmoid(D_fake).mean().item(), epoch)
         config.WRITER_REAL.add_scalar("discriminator loss", D_loss.item(), epoch)
         config.WRITER_REAL.add_scalar("generator loss", G_loss.item(), epoch)
+        config.WRITER_REAL.add_scalar("correlation", findCorrelation(gen, val_loader), epoch)
 
 
 def main():
@@ -121,7 +122,7 @@ def main():
     for epoch in range(config.NUM_EPOCHS):
         train_fn(
             disc, gen, train_loader, opt_disc, opt_gen, L1_LOSS, BCE,
-            g_scaler, d_scaler, epoch)
+            g_scaler, d_scaler, epoch, val_loader)
 
         if config.SAVE_MODEL and epoch % 5 == 0:
             save_checkpoint(gen, opt_gen, filename=config.CHECKPOINT_GEN)

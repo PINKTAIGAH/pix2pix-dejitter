@@ -25,6 +25,16 @@ def save_checkpoint(model, optimizer, filename="my_checkpoint.pth.tar"):
     }
     torch.save(checkpoint, filename)
 
+def findCorrelation(gen, val_loader,):
+    x, y = next(iter(val_loader))
+    x, y = x.to(config.DEVICE), y.to(config.DEVICE)
+    gen.eval()
+    with torch.no_grad():
+        y_fake = gen(x)
+        y_fake = y_fake * 0.5 + 0.5  # remove normalization#
+        correlation = corrImage(y, y_fake)
+    gen.train()
+    return correlation
 
 def load_checkpoint(checkpoint_file, model, optimizer, lr):
     print("=> Loading checkpoint")
@@ -73,4 +83,14 @@ def normalise(x):
     return x/np.sum(x**2)
 
 def corrImage(img1, img2):
-    return torch.sum((img1*img2)**2)/torch.sqrt((img1**2).torch() * (img2**2).sum())
+    match len(img1.shape):
+        case 2:
+            pass
+        case 3:
+            img1, img2 = img1[0], img2[0]
+        case 4:
+            img1, img2 = img1[0, 0], img2[0, 0]
+        case _:
+            raise Exception("Tensor must be of size 2, 3 or 4")
+
+    return torch.sum((img1*img2)**2)/torch.sqrt((img1**2).sum() * (img2**2).sum())
