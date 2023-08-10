@@ -83,14 +83,7 @@ def normalise(x):
     return x/np.sum(x**2)
 
 def corrImage(img1, img2):
-    match len(img1.shape):
-        case 2:
-            pass
-        case 3:
-            img1, img2 = img1[0], img2[0]
-        case 4:
-            img1, img2 = img1[0, 0], img2[0, 0]
-        case _:
-            raise Exception("Tensor must be of size 2, 3 or 4")
+    if img1.shape != img2.shape:
+        raise Exception("Shape of both images must be of the same shape")
 
     return torch.sum((img1*img2)**2)/torch.sqrt((img1**2).sum() * (img2**2).sum())

@@ -21,8 +21,7 @@ def test():
     
     _, img = dataset[0]
 
-    maxJitterArray = np.arange(0, 15, 0.25) 
-    print(maxJitterArray)
+    maxJitterArray = np.arange(0, 9, 0.25) 
     shiftedImg = [generateShiftedImage(img, filter, maxJitterArray[i]) for i in range(maxJitterArray.shape[0])]
     imgSimilarity = []
 
@@ -32,7 +31,7 @@ def test():
     for i in range(len(shiftedImg)):
         if i <= 8:    
             axes[i].imshow(shiftedImg[i], cmap="gray")
-        imgSimilarity.append(utils.corrImage(img, shiftedImg[i]))
+        imgSimilarity.append(utils.corrImage(img[0], shiftedImg[i]))
     plt.show()
     plt.plot(imgSimilarity)
     plt.show()
