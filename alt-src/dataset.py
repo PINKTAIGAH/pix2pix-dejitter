@@ -35,7 +35,7 @@ class JitteredDataset(Dataset):
 
 if __name__ == "__main__":
 
-    N = 600 
+    N = 512
     t1 = time()
     dataset = JitteredDataset(N, 2000, )
     loader = DataLoader(dataset, batch_size=5)
