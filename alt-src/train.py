@@ -1,5 +1,5 @@
 import torch
-from utils import save_checkpoint, load_checkpoint, save_some_examples, findCorrelation
+from utils import findMin, save_checkpoint, load_checkpoint, save_some_examples, findCorrelation
 import torch.nn as nn
 import torch.optim as optim
 import config
@@ -10,13 +10,14 @@ from discriminator import Discriminator
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from torchvision.utils import save_image, make_grid
+import numpy as np
 
 torch.backends.cudnn.benchmark = True
 
 
 def train_fn(
     disc, gen, loader, opt_disc, opt_gen, l1_loss, bce, g_scaler, d_scaler,
-    epoch, val_loader, 
+    epoch, val_loader, correlation_list 
     ):
     loop = tqdm(loader, leave=True)
     step = 0
@@ -24,6 +25,7 @@ def train_fn(
     for idx, (x, y) in enumerate(loop):
         x = x.to(config.DEVICE)
         y = y.to(config.DEVICE)
+        correlation_batch_list = []
 
         # Train Discriminator
         with torch.cuda.amp.autocast():
@@ -56,6 +58,11 @@ def train_fn(
                 D_real=torch.sigmoid(D_real).mean().item(),
                 D_fake=torch.sigmoid(D_fake).mean().item(),
             )
+        with torch.no_grad():
+            correlation_batch_list.append(findCorrelation(y_fake, y).item())
+
+    correlation_list.append(sum(correlation_batch_list)/len(correlation_batch_list))
+    return correlation_list
     """
         with torch.no_grad():
             fakeSample = gen(x) 
@@ -83,6 +90,7 @@ def main():
     BCE = nn.BCEWithLogitsLoss()
     L1_LOSS = nn.L1Loss()
 
+
     if config.LOAD_MODEL:
         load_checkpoint(
             config.CHECKPOINT_GEN, gen, opt_gen, config.LEARNING_RATE,
@@ -107,6 +115,7 @@ def main():
     # val_dataset = CellDataset(config.VAL_DIR, config.IMAGE_SIZE,
                                 # config.MAX_JITTER, config.transformsCell) 
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
+    correlation_list = []
     
     """
     schedular_disc = optim.lr_scheduler.ReduceLROnPlateau(opt_disc, mode="min",
@@ -120,15 +129,16 @@ def main():
     """
 
     for epoch in range(config.NUM_EPOCHS):
-        train_fn(
+        correlation_list = train_fn(
             disc, gen, train_loader, opt_disc, opt_gen, L1_LOSS, BCE,
-            g_scaler, d_scaler, epoch, val_loader)
+            g_scaler, d_scaler, epoch, val_loader, correlation_list)
 
         if config.SAVE_MODEL and epoch % 5 == 0:
             save_checkpoint(gen, opt_gen, filename=config.CHECKPOINT_GEN)
             save_checkpoint(disc, opt_disc, filename=config.CHECKPOINT_DISC)
 
         save_some_examples(gen, val_loader, epoch, folder="evaluation")
+    np.savetxt("raw_data/correlation.txt", np.array(correlation_list), delimiter=',')
 
 if __name__ == "__main__":
     main()

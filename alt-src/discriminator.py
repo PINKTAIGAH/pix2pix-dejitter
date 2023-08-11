@@ -56,8 +56,8 @@ class Discriminator(nn.Module):
 
 
 def test():
-    x = torch.randn((1, 1, 256, 256))
-    y = torch.randn((1, 1, 256, 256))
+    x = torch.randn((1, 1, 600, 600))
+    y = torch.randn((1, 1, 600, 600))
     model = Discriminator(in_channels=1)
     preds = model(x, y)
     print(preds.shape)
