@@ -59,7 +59,7 @@ def train_fn(
                 D_fake=torch.sigmoid(D_fake).mean().item(),
             )
         with torch.no_grad():
-            correlation_batch_list.append(findCorrelation(y_fake, y).item())
+            correlation_batch_list.append(findCorrelation(gen, val_loader).item())
 
     correlation_list.append(sum(correlation_batch_list)/len(correlation_batch_list))
     return correlation_list

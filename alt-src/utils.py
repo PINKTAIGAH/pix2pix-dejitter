@@ -86,4 +86,4 @@ def corrImage(img1, img2):
     if img1.shape != img2.shape:
         raise Exception("Shape of both images must be of the same shape")
 
-    return torch.sum((img1*img2)**2)/torch.sqrt((img1**2).sum() * (img2**2).sum())
+    return torch.sum((img1*img2)**2)/torch.sqrt((img1**2).sum() * (img2**2).sum()).item()
