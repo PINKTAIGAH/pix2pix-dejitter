@@ -46,7 +46,7 @@ class Generator(nn.Module):
             features * 8, features * 8, down=True, act="leaky", use_dropout=False
         )
         self.bottleneck = nn.Sequential(
-            nn.Conv2d(features * 8, features * 8, 4, 2, 1), nn.ReLU()
+            nn.Conv2d(features * 8, features * 8, 4, 2, 1), nn.ReLU(),
         )
 
         self.up1 = Block(features * 8, features * 8, down=False, act="relu", use_dropout=True)
@@ -91,8 +91,8 @@ class Generator(nn.Module):
 
 
 def test():
-    x = torch.randn((1, 3, 256, 256))
-    model = Generator(in_channels=3, features=64)
+    x = torch.randn((1, 1, 512, 512))
+    model = Generator(in_channels=1, features=64)
     preds = model(x)
     print(preds.shape)
 
