@@ -32,7 +32,7 @@ class ImageGenerator(Dataset):
                                     # self.correlationLength,
                                     # maxJitter)
         
-        maxJitter = np.random.uniform(1.5, 10)
+        maxJitter = np.random.uniform(1.5, 20)
         return np.random.uniform(-maxJitter, maxJitter, size=self.imageHight)
 
     def shiftImage(self, input, shiftMatrix, outputTensor=True):
