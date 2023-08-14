@@ -56,9 +56,12 @@ class ImageGenerator(Dataset):
         shiftMap = self.generateShiftMap()
         step = self.identityFlowMap[0, 0, 1, 0] - self.identityFlowMap[0, 0, 0, 0]   
         
-        flowMap = torch.clone(self.identityFlowMap)
-        flowMap[:, :, :, 0] += torch.unsqueeze(shiftMap*step, 0) 
-        return flowMap
+        flowMapShift, flowMapUnshift = (torch.clone(self.identityFlowMap),
+                                        torch.clone(self.identityFlowMap))
+        flowMapShift[:, :, :, 0] += torch.unsqueeze(shiftMap*step, 0) 
+        flowMapUnshift[:, :, :, 0] -= torch.unsqueeze(shiftMap*step, 0)
+        
+        return flowMapShift, flowMapUnshift 
 
     def shift(self, input, flowMap):
         input = torch.unsqueeze(torch.unsqueeze(input, 0) ,0)
@@ -112,34 +115,17 @@ def test():
                             config.PADDING_WIDTH, config.MAX_JITTER)
 
     groundTruth = filter.generateGroundTruth()
-    flowMap = filter.generateFlowMap()
-    shifted = torch.squeeze(filter.shift(groundTruth, flowMap), 0)
-    unshifted = torch.squeeze(filter.shift(torch.squeeze(shifted, 0), -flowMap), 0)
-    print(groundTruth.shape, shifted.shape)
+    flowMapShift, flowMapUnshift = filter.generateFlowMap()
+    shifted = torch.squeeze(filter.shift(groundTruth, flowMapShift), 0)
+    unshifted = filter.shift(shifted[0], flowMapUnshift)
 
-    """
-    shifted = filter.shiftImage(groundTruth, shiftsMap)
-    unshifted = filter.shiftImage(shifted, -shiftsMap)
-
-    groundTruth = torch.unsqueeze(groundTruth, 0)
-    shifted = torch.unsqueeze(shifted, 0)
-    unshifted = torch.unsqueeze(unshifted, 0)
-
-    groundTruth = utils.normaliseTensor(groundTruth)
-    shifted = utils.normaliseTensor(shifted)
-    unshifted = utils.normaliseTensor(unshifted)
-
-    save_image(shifted, "images/test.png", )
-    print(groundTruth.shape, shiftsMap.shape)
-    """
-    x = np.arange(config.IMAGE_SIZE)
-    fig, (ax1,ax2,ax3) = plt.subplots(1, 3)
+    # x = np.arange(config.IMAGE_SIZE)
+    fig, ((ax1,ax2),(ax3, ax4)) = plt.subplots(2, 2)
     ax1.imshow(groundTruth, cmap="gray")
     ax2.imshow(shifted[0], cmap="gray")
-    ax3.imshow(unshifted[0], cmap="gray")
+    ax3.imshow(unshifted[0, 0], cmap="gray")
+    ax4.imshow(groundTruth - unshifted[0, 0], cmap="gray")
     plt.show()
-    
-    
 
 if __name__ == "__main__":
     test()
