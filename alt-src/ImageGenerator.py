@@ -63,7 +63,7 @@ class ImageGenerator(Dataset):
     def shift(self, input, flowMap):
         input = torch.unsqueeze(torch.unsqueeze(input, 0) ,0)
         return F.grid_sample(input, flowMap, mode="bicubic", padding_mode="zeros",
-                         align_corners=True)
+                         align_corners=False)
 
     """
     def generateShifts(self):
@@ -114,6 +114,8 @@ def test():
     groundTruth = filter.generateGroundTruth()
     flowMap = filter.generateFlowMap()
     shifted = torch.squeeze(filter.shift(groundTruth, flowMap), 0)
+    unshifted = torch.squeeze(filter.shift(torch.squeeze(shifted, 0), -flowMap), 0)
+    print(groundTruth.shape, shifted.shape)
 
     """
     shifted = filter.shiftImage(groundTruth, shiftsMap)
@@ -131,9 +133,10 @@ def test():
     print(groundTruth.shape, shiftsMap.shape)
     """
     x = np.arange(config.IMAGE_SIZE)
-    fig, (ax1,ax2,) = plt.subplots(1, 2)
+    fig, (ax1,ax2,ax3) = plt.subplots(1, 3)
     ax1.imshow(groundTruth, cmap="gray")
     ax2.imshow(shifted[0], cmap="gray")
+    ax3.imshow(unshifted[0], cmap="gray")
     plt.show()
     
     

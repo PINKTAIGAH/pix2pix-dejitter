@@ -12,18 +12,19 @@ class JitteredDataset(Dataset):
         self.N = imageSize 
         self.length = length
         self.filter = ImageGenerator(config.PSF, config.IMAGE_SIZE,
-                            config.CORRELATION_LENGTH, config.PADDING_WIDTH)
+                            config.CORRELATION_LENGTH, config.PADDING_WIDTH,
+                                     config.MAX_JITTER)
     def __len__(self):
         return self.length
 
     def __getitem__(self, idx):
 
         groundTruth = self.filter.generateGroundTruth()
-        shiftsMap = self.filter.generateShifts()
-        shifted = self.filter.shiftImage(groundTruth, shiftsMap)
+        flowMap = self.filter.generateFlowMap()
+        shifted = self.filter.shift(groundTruth, flowMap)
 
         groundTruth = torch.unsqueeze(groundTruth, 0)
-        shifted = torch.unsqueeze(shifted, 0)
+        shifted = torch.squeeze(shifted, 0)
 
         groundTruth = utils.normaliseTensor(groundTruth)
         shifted = utils.normaliseTensor(shifted)
@@ -35,8 +36,7 @@ class JitteredDataset(Dataset):
 
 if __name__ == "__main__":
 
-    N = 512
-    t1 = time()
+    N = 256
     dataset = JitteredDataset(N, 2000, )
     loader = DataLoader(dataset, batch_size=5)
 
@@ -45,5 +45,4 @@ if __name__ == "__main__":
         if i == 0:
             save_image(x, "images/Jittered.png")
             save_image(y, "images/Unjittered.png")
-        print(f"Time taken to make {i} images: {time()-t1} s")
 
