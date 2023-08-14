@@ -16,7 +16,8 @@ class CellDataset(Dataset):
         self.listFiles = os.listdir(self.rootDirectory)
         self.N = imageSize 
         self.maxJitter = maxJitter
-        self.filter = ImageGenerator(config.PSF, config.MAX_JITTER, config.IMAGE_SIZE)
+        self.filter = ImageGenerator(config.PSF, config.IMAGE_SIZE, config.CORRELATION_LENGTH,
+                                     config.PADDING_WIDTH, config.MAX_JITTER)
         self.transform = transform
 
     def __len__(self):
@@ -35,24 +36,24 @@ class CellDataset(Dataset):
         groundTruth = self.getImage(index)
         groundTruth = torch.squeeze(groundTruth, 0)
 
-        shifts = self.filter.generateShifts()
-        shiftedImage = self.filter.shiftImage(groundTruth, shifts,)
+        flowMapShift, flowMapUnshift = self.filter.generateFlowMap()
+        shifted = self.filter.shift(groundTruth, flowMapShift)
 
-        shiftedImage = torch.unsqueeze(shiftedImage, 0)
         groundTruth = torch.unsqueeze(groundTruth, 0)
+        shifted = torch.squeeze(shifted, 0)
 
-        shiftedImage = utils.normaliseTensor(shiftedImage)
         groundTruth = utils.normaliseTensor(groundTruth)
-        
-        shiftedImage = config.transforms(shiftedImage)
-        groundTruth = config.transforms(groundTruth)
+        shifted = utils.normaliseTensor(shifted)
 
-        return shiftedImage, groundTruth
+        groundTruth = config.transforms(groundTruth)
+        shifted = config.transforms(shifted)
+
+        return shifted, groundTruth
 
 def test():
     dataset = CellDataset(config.VAL_DIR,
                           config.IMAGE_SIZE, config.MAX_JITTER, config.transformsCell)
-    x, y = dataset[3]
+    x, y = dataset[0]
 
     save_image(x, "images/x.png")
     save_image(y, "images/y.png")

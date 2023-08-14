@@ -12,10 +12,10 @@ def normalise(x):
     return x/np.sum(x**2)
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-#TRAIN_DIR = "/home/giorgio/Desktop/cell_dataset/train/"
-TRAIN_DIR = "/home/brunicam/myscratch/p3_scratch/cell_dataset/train/"
-#VAL_DIR = "/home/giorgio/Desktop/cell_dataset/val/"
-VAL_DIR = "/home/brunicam/myscratch/p3_scratch/cell_dataset/val/"
+TRAIN_DIR = "/home/giorgio/Desktop/p06_images/train/"
+# TRAIN_DIR = "/home/brunicam/myscratch/p3_scratch/cell_dataset/train/"
+VAL_DIR = "/home/giorgio/Desktop/p06_images/val/"
+# VAL_DIR = "/home/brunicam/myscratch/p3_scratch/cell_dataset/val/"
 LEARNING_RATE = 2e-4
 BATCH_SIZE = 32
 SCHEDULAR_DECAY = 0.5
@@ -51,5 +51,6 @@ transforms = transform.Compose([
 
 transformsCell = transform.Compose([
     transform.ToTensor(),
+    transform.RandomCrop(IMAGE_SIZE),
     transform.Grayscale(),
 ])
