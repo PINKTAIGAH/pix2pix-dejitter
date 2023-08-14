@@ -29,6 +29,8 @@ shiftmap = torch.rand((config.IMAGE_SIZE, config.IMAGE_SIZE))*20
 gridmap[:, :, :, 0] += shiftmap*gap
 
 output = shift(groundTruth, gridmap)
+ 
+print(gridmap.shape, shiftmap.shape, output.shape)
 
 fig, (ax1, ax2) = plt.subplots(1, 2)
 ax1.imshow(groundTruth[0, 0], cmap="gray")

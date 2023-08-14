@@ -1,23 +1,27 @@
 from torch.utils.data import Dataset
-from scipy.ndimage import shift
+from scipy.ndimage import shift as shiftImage
 import torch
 import config
 import utils
-import wavelets
 import numpy as np
 import matplotlib.pyplot as plt
-from torchvision.utils import save_image
 from torchvision.transforms import Pad
+import torch.nn.functional as F
 
 class ImageGenerator(Dataset):
 
-    def __init__(self, psf, imageHeight, correlationLength, paddingWidth):
+    def __init__(self, psf, imageHeight, correlationLength, paddingWidth, maxJitter):
         
         self.psf = psf
         self.ftPsf = torch.fft.fft2(self.psf)
         self.imageHight = imageHeight
         self.correlationLength = correlationLength
         self.pad = Pad(paddingWidth)
+        self.maxJitter = maxJitter
+
+        identifyAffine = torch.tensor([[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]])
+        self.identityFlowMap = F.affine_grid(identifyAffine,
+                                             [1, 1, self.imageHight, self.imageHight]) 
 
     def generateGroundTruth(self):
 
@@ -30,7 +34,7 @@ class ImageGenerator(Dataset):
     
     def generateSignal(self, x):
         frequency, phase = np.random.uniform(), np.random.uniform(0, 2*np.pi)
-        return np.sin(2*np.pi*frequency*x + phase)
+        return np.sin(2*np.pi*50*x + phase)
 
     def generateShiftMap(self):
         
@@ -41,11 +45,25 @@ class ImageGenerator(Dataset):
             x = np.arange(self.imageHight)
             yFinal = np.zeros_like(x, dtype=np.float64)
             for _, val in enumerate(waveletCenters):
+                jitter = np.random.uniform(0.5, self.maxJitter)
                 y = self.generateSignal(x)
                 yWavelet = self.wavelet(x, val, self.correlationLength)
-                yFinal += utils.adjustArray(y * yWavelet)
+                yFinal += utils.adjustArray(y * yWavelet)*jitter*2
             shiftMap[i] = yFinal
         return torch.from_numpy(shiftMap)
+
+    def generateFlowMap(self,):
+        shiftMap = self.generateShiftMap()
+        step = self.identityFlowMap[0, 0, 1, 0] - self.identityFlowMap[0, 0, 0, 0]   
+        
+        flowMap = torch.clone(self.identityFlowMap)
+        flowMap[:, :, :, 0] += torch.unsqueeze(shiftMap*step, 0) 
+        return flowMap
+
+    def shift(self, input, flowMap):
+        input = torch.unsqueeze(torch.unsqueeze(input, 0) ,0)
+        return F.grid_sample(input, flowMap, mode="bicubic", padding_mode="zeros",
+                         align_corners=True)
 
     """
     def generateShifts(self):
@@ -65,14 +83,13 @@ class ImageGenerator(Dataset):
         output = np.copy(input)
         for i in range(self.imageHight):
             shifts = shiftMatrix[i]
-            output[i, :] = shift(input[i, :], shifts, output=None, 
+            output[i, :] = shift(inputImage[i, :], shifts, output=None, 
                                     order=3, mode="constant", cval=0, prefilter=True)
         if outputTensor:
             return torch.from_numpy(output).type(torch.float32)
 
         return output
     
-   
     def shiftImage(self, input, shiftMatrix, outputTensor=True):
         if not isinstance(input, np.ndarray):
             input.numpy()
@@ -81,7 +98,7 @@ class ImageGenerator(Dataset):
         for i in range(self.imageHight):
             for j in range(self.imageHight):
                 shifts = np.cumsum(shiftMatrix[i])
-                output[i, :j] = shift(input[i, :j], shifts[j], output=None, 
+                output[i, :j] = shiftImage(input[i, :j], shifts[j], output=None, 
                                     order=3, mode="constant", cval=0, prefilter=True)
         if outputTensor:
             return torch.from_numpy(output).type(torch.float32)
@@ -91,11 +108,12 @@ class ImageGenerator(Dataset):
 
 def test():
 
-    filter = ImageGenerator(config.PSF, config.IMAGE_SIZE,
-                            config.CORRELATION_LENGTH, config.PADDING_WIDTH)
+    filter = ImageGenerator(config.PSF, config.IMAGE_SIZE, config.CORRELATION_LENGTH,
+                            config.PADDING_WIDTH, config.MAX_JITTER)
 
     groundTruth = filter.generateGroundTruth()
-    shiftMap = filter.generateShiftMap()
+    flowMap = filter.generateFlowMap()
+    shifted = torch.squeeze(filter.shift(groundTruth, flowMap), 0)
 
     """
     shifted = filter.shiftImage(groundTruth, shiftsMap)
@@ -113,10 +131,9 @@ def test():
     print(groundTruth.shape, shiftsMap.shape)
     """
     x = np.arange(config.IMAGE_SIZE)
-    fig, (ax1,ax2, ax3) = plt.subplots(3,1)
-    ax3.scatter(x, shiftMap[0])
-    ax2.scatter(x, shiftMap[2])
-    ax1.scatter(x, shiftMap[4])
+    fig, (ax1,ax2,) = plt.subplots(1, 2)
+    ax1.imshow(groundTruth, cmap="gray")
+    ax2.imshow(shifted[0], cmap="gray")
     plt.show()
     
     
