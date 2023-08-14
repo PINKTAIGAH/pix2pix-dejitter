@@ -25,6 +25,29 @@ class ImageGenerator(Dataset):
         groundTruth = torch.fft.ifft2(self.ftPsf * torch.fft.fft2(whiteNoise))  
         return self.pad(torch.real(groundTruth).type(torch.float32))
 
+    def wavelet(self, x, x_0=0.0, std=1.0):
+        return np.exp(-(x-x_0)**2/(2*std**2))
+    
+    def generateSignal(self, x):
+        frequency, phase = np.random.uniform(), np.random.uniform(0, 2*np.pi)
+        return np.sin(2*np.pi*frequency*x + phase)
+
+    def generateShiftMap(self):
+        
+        shiftMap = np.empty((self.imageHight, self.imageHight))
+        waveletCenters = np.arange(0, self.imageHight, self.correlationLength*3)
+
+        for i in range(self.imageHight):
+            x = np.arange(self.imageHight)
+            yFinal = np.zeros_like(x, dtype=np.float64)
+            for _, val in enumerate(waveletCenters):
+                y = self.generateSignal(x)
+                yWavelet = self.wavelet(x, val, self.correlationLength)
+                yFinal += utils.adjustArray(y * yWavelet)
+            shiftMap[i] = yFinal
+        return torch.from_numpy(shiftMap)
+
+    """
     def generateShifts(self):
 
         # maxJitter = np.random.uniform(0.5, 10)
@@ -49,7 +72,7 @@ class ImageGenerator(Dataset):
 
         return output
     
-    """
+   
     def shiftImage(self, input, shiftMatrix, outputTensor=True):
         if not isinstance(input, np.ndarray):
             input.numpy()
@@ -72,7 +95,9 @@ def test():
                             config.CORRELATION_LENGTH, config.PADDING_WIDTH)
 
     groundTruth = filter.generateGroundTruth()
-    shiftsMap = filter.generateShifts()
+    shiftMap = filter.generateShiftMap()
+
+    """
     shifted = filter.shiftImage(groundTruth, shiftsMap)
     unshifted = filter.shiftImage(shifted, -shiftsMap)
 
@@ -86,13 +111,14 @@ def test():
 
     save_image(shifted, "images/test.png", )
     print(groundTruth.shape, shiftsMap.shape)
-
-    fig, (ax1,ax2, ax3) = plt.subplots(1,3)
-    ax3.imshow(unshifted[0])
-    ax2.imshow(shifted[0])
-    ax1.imshow(groundTruth[0])
+    """
+    x = np.arange(config.IMAGE_SIZE)
+    fig, (ax1,ax2, ax3) = plt.subplots(3,1)
+    ax3.scatter(x, shiftMap[0])
+    ax2.scatter(x, shiftMap[2])
+    ax1.scatter(x, shiftMap[4])
     plt.show()
-
+    
     
 
 if __name__ == "__main__":
