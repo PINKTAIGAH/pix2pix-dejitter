@@ -32,9 +32,9 @@ class ImageGenerator(Dataset):
     def wavelet(self, x, x_0=0.0, std=1.0):
         return np.exp(-(x-x_0)**2/(2*std**2))
     
-    def generateSignal(self, x):
-        frequency, phase = np.random.uniform(), np.random.uniform(0, 2*np.pi)
-        return np.sin(2*np.pi*50*x + phase)
+    def generateSignal(self, x, frequency):
+        phase = np.random.uniform(0, 2*np.pi)
+        return np.sin(2*np.pi*frequency*x + phase)
 
     def generateShiftMap(self):
         
@@ -44,9 +44,10 @@ class ImageGenerator(Dataset):
         for i in range(self.imageHight):
             x = np.arange(self.imageHight)
             yFinal = np.zeros_like(x, dtype=np.float64)
+            frequency = int(np.random.uniform(10, 100))
             for _, val in enumerate(waveletCenters):
                 jitter = np.random.uniform(0.5, self.maxJitter)
-                y = self.generateSignal(x)
+                y = self.generateSignal(x, frequency)
                 yWavelet = self.wavelet(x, val, self.correlationLength)
                 yFinal += utils.adjustArray(y * yWavelet)*jitter*2
             shiftMap[i] = yFinal
@@ -61,53 +62,12 @@ class ImageGenerator(Dataset):
         flowMapShift[:, :, :, 0] += torch.unsqueeze(shiftMap*step, 0) 
         flowMapUnshift[:, :, :, 0] -= torch.unsqueeze(shiftMap*step, 0)
         
-        return flowMapShift, flowMapUnshift 
+        return flowMapShift, flowMapUnshift, torch.from_numpy(shiftMap)
 
     def shift(self, input, flowMap):
         input = torch.unsqueeze(torch.unsqueeze(input, 0) ,0)
         return F.grid_sample(input, flowMap, mode="bicubic", padding_mode="zeros",
                          align_corners=False)
-
-    """
-    def generateShifts(self):
-
-        # maxJitter = np.random.uniform(0.5, 10)
-        # shiftsMap = wavelets.generateShiftMatrix(self.imageHight,
-                                    # self.correlationLength,
-                                    # maxJitter)
-        
-        maxJitter = np.random.uniform(1.5, 20)
-        return np.random.uniform(-maxJitter, maxJitter, size=self.imageHight)
-
-    def shiftImage(self, input, shiftMatrix, outputTensor=True):
-        if not isinstance(input, np.ndarray):
-            input.numpy()
-
-        output = np.copy(input)
-        for i in range(self.imageHight):
-            shifts = shiftMatrix[i]
-            output[i, :] = shift(inputImage[i, :], shifts, output=None, 
-                                    order=3, mode="constant", cval=0, prefilter=True)
-        if outputTensor:
-            return torch.from_numpy(output).type(torch.float32)
-
-        return output
-    
-    def shiftImage(self, input, shiftMatrix, outputTensor=True):
-        if not isinstance(input, np.ndarray):
-            input.numpy()
-
-        output = np.copy(input)
-        for i in range(self.imageHight):
-            for j in range(self.imageHight):
-                shifts = np.cumsum(shiftMatrix[i])
-                output[i, :j] = shiftImage(input[i, :j], shifts[j], output=None, 
-                                    order=3, mode="constant", cval=0, prefilter=True)
-        if outputTensor:
-            return torch.from_numpy(output).type(torch.float32)
-
-        return output
-    """
 
 def test():
 
@@ -115,11 +75,18 @@ def test():
                             config.PADDING_WIDTH, config.MAX_JITTER)
 
     groundTruth = filter.generateGroundTruth()
-    flowMapShift, flowMapUnshift = filter.generateFlowMap()
+    flowMapShift, flowMapUnshift, shiftMap = filter.generateFlowMap()
     shifted = torch.squeeze(filter.shift(groundTruth, flowMapShift), 0)
     unshifted = filter.shift(shifted[0], flowMapUnshift)
 
-    # x = np.arange(config.IMAGE_SIZE)
+    x = np.arange(config.IMAGE_SIZE)
+    fig, (ax1,ax2, ax3, ax4) = plt.subplots(4, 1)
+    ax1.scatter(x, shiftMap[0])
+    ax2.scatter(x, shiftMap[1])
+    ax3.scatter(x, shiftMap[2])
+    ax4.scatter(x, shiftMap[3])
+    plt.show()
+
     fig, ((ax1,ax2),(ax3, ax4)) = plt.subplots(2, 2)
     ax1.imshow(groundTruth, cmap="gray")
     ax2.imshow(shifted[0], cmap="gray")
