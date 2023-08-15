@@ -39,12 +39,17 @@ class ImageGenerator(Dataset):
     def generateShiftMap(self):
         
         shiftMap = np.empty((self.imageHight, self.imageHight))
-        waveletCenters = np.arange(0, self.imageHight, self.correlationLength*3)
+        waveletCentersDistance = np.random.normal(self.correlationLength*3,
+                                                  self.correlationLength)
+        waveletCenters = np.arange(0, self.imageHight, waveletCentersDistance)
 
         for i in range(self.imageHight):
             x = np.arange(self.imageHight)
             yFinal = np.zeros_like(x, dtype=np.float64)
             frequency = int(np.random.uniform(10, 100))
+            waveletCentersDistance = np.random.normal(self.correlationLength*3,
+                                                  self.correlationLength)
+            waveletCenters = np.arange(0, self.imageHight, waveletCentersDistance)
             for _, val in enumerate(waveletCenters):
                 jitter = np.random.uniform(0.5, self.maxJitter)
                 y = self.generateSignal(x, frequency)
@@ -62,7 +67,7 @@ class ImageGenerator(Dataset):
         flowMapShift[:, :, :, 0] += torch.unsqueeze(shiftMap*step, 0) 
         flowMapUnshift[:, :, :, 0] -= torch.unsqueeze(shiftMap*step, 0)
         
-        return flowMapShift, flowMapUnshift, torch.from_numpy(shiftMap)
+        return flowMapShift, flowMapUnshift, shiftMap
 
     def shift(self, input, flowMap):
         input = torch.unsqueeze(torch.unsqueeze(input, 0) ,0)
