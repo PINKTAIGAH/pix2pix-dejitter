@@ -4,6 +4,7 @@ import torch
 import config
 import utils
 import numpy as np
+from time import time
 import matplotlib.pyplot as plt
 from torchvision.transforms import Pad
 import torch.nn.functional as F
@@ -46,6 +47,7 @@ class ImageGenerator(Dataset):
         for i in range(self.imageHight):
             x = np.arange(self.imageHight)
             yFinal = np.zeros_like(x, dtype=np.float64)
+
             frequency = int(np.random.uniform(10, 100))
             waveletCentersDistance = np.random.normal(self.correlationLength*3,
                                                   self.correlationLength)
@@ -79,10 +81,13 @@ def test():
     filter = ImageGenerator(config.PSF, config.IMAGE_SIZE, config.CORRELATION_LENGTH,
                             config.PADDING_WIDTH, config.MAX_JITTER)
 
+    t1 = time()
     groundTruth = filter.generateGroundTruth()
     flowMapShift, flowMapUnshift, shiftMap = filter.generateFlowMap()
     shifted = torch.squeeze(filter.shift(groundTruth, flowMapShift), 0)
+    t2 = time()
     unshifted = filter.shift(shifted[0], flowMapUnshift)
+    t3 = time()
 
     x = np.arange(config.IMAGE_SIZE)
     fig, (ax1,ax2, ax3, ax4) = plt.subplots(4, 1)
@@ -98,6 +103,8 @@ def test():
     ax3.imshow(unshifted[0, 0], cmap="gray")
     ax4.imshow(groundTruth - unshifted[0, 0], cmap="gray")
     plt.show()
+    print(f"Time taken to generate ground truth and shift: {t2-t1} s")
+    print(f"Time taken to unshft image: {t3-t2} s")
 
 if __name__ == "__main__":
     test()
