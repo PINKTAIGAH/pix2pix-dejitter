@@ -99,9 +99,9 @@ def main():
             config.CHECKPOINT_DISC, disc, opt_disc, config.LEARNING_RATE,
         )
 
-    train_dataset = JitteredDataset(config.IMAGE_SIZE, 1000) 
-    # train_dataset = CellDataset(config.TRAIN_DIR, config.IMAGE_SIZE,
-                                # config.MAX_JITTER, config.transformsCell) 
+    #train_dataset = JitteredDataset(config.IMAGE_SIZE, 1000) 
+    train_dataset = CellDataset(config.TRAIN_DIR, config.IMAGE_SIZE,
+                                config.MAX_JITTER, config.transformsCell) 
     
     train_loader = DataLoader(
         train_dataset,
@@ -111,9 +111,9 @@ def main():
     )
     g_scaler = torch.cuda.amp.GradScaler()
     d_scaler = torch.cuda.amp.GradScaler()
-    val_dataset = JitteredDataset(config.IMAGE_SIZE, 500,) 
-    # val_dataset = CellDataset(config.VAL_DIR, config.IMAGE_SIZE,
-                                # config.MAX_JITTER, config.transformsCell) 
+    #val_dataset = JitteredDataset(config.IMAGE_SIZE, 500,) 
+    val_dataset = CellDataset(config.VAL_DIR, config.IMAGE_SIZE,
+                                config.MAX_JITTER, config.transformsCell) 
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
     correlation_list = []
     
