@@ -49,7 +49,7 @@ class ImageGenerator(Dataset):
             yFinal = np.zeros_like(x, dtype=np.float64)
 
             frequency = int(np.random.uniform(10, 100))
-            waveletCentersDistance = np.random.normal(self.correlationLength*3,
+            waveletCentersDistance = np.random.normal(self.correlationLength*4.5,
                                                   self.correlationLength)
             waveletCenters = np.arange(0, self.imageHight, waveletCentersDistance)
             for _, val in enumerate(waveletCenters):
