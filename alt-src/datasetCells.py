@@ -9,6 +9,7 @@ from torchvision.datasets import MNIST, PCAM
 from torch.utils.data import Dataset, DataLoader
 from ImageGenerator import ImageGenerator
 from torchvision.utils import save_image
+import matplotlib.pyplot as plt
 
 class CellDataset(Dataset):
     def __init__(self, rootDirectory, imageSize, maxJitter, transform):
@@ -36,7 +37,7 @@ class CellDataset(Dataset):
         groundTruth = self.getImage(index)
         groundTruth = torch.squeeze(groundTruth, 0)
 
-        flowMapShift, flowMapUnshift = self.filter.generateFlowMap()
+        flowMapShift, flowMapUnshift , _ = self.filter.generateFlowMap()
         shifted = self.filter.shift(groundTruth, flowMapShift)
 
         groundTruth = torch.unsqueeze(groundTruth, 0)
@@ -53,11 +54,19 @@ class CellDataset(Dataset):
 def test():
     dataset = CellDataset(config.VAL_DIR,
                           config.IMAGE_SIZE, config.MAX_JITTER, config.transformsCell)
-    x, y = dataset[0]
-
-    save_image(x, "images/x.png")
-    save_image(y, "images/y.png")
-    save_image(y-x, "images/res.png")
+    fig, (ax1, ax2) = plt.subplots(1, 2)
+    for i in range(len(dataset)):
+        x, y, = dataset[i]
+        if i == 0:
+            ax1.imshow(x[0], animated=True)
+            ax2.imshow(y[0], animated=True)
+        else:
+            plt.cla()
+            ax1.imshow(x[0], animated=True)
+            ax2.imshow(y[0], animated=True)
+            plt.draw()
+            plt.pause(0.5)
+        print(i)
     
 
 if __name__ == "__main__":
