@@ -146,7 +146,7 @@ class Discriminator(nn.Module):
 
 
 def test():
-    N = 512
+    N = 256
     x = torch.randn((1, 1, N, N))
     y = torch.randn((1, 1, N, N))
     model = Discriminator(inChannels=1)

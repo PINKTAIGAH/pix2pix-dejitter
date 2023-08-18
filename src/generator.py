@@ -2,26 +2,89 @@ import torch
 import torch.nn as nn
 
 class Block(nn.Module):
-    def __init__(self, in_channels, out_channels, down=True, act="relu", use_dropout=False):
+    """
+    A torch.nn.Module instance containing a template for a convolutional block 
+    used in the UNET network used in the pix2pix Generator
+
+    Atributes
+    ---------
+    block: torch.nn.Sequential
+        Object that will return the output of a convolutional block of the
+        a PatchGAN discriminator (kernal size 4)
+        
+        Object is capable of being a convolutional or a transpose convolutional
+        block depending on input parameters
+        
+        Activation function used will either be LeakyReLU or ReLU depending on 
+        input parameters
+
+    Parameters
+    ----------
+    inChannels: int
+        Number of image channels in input image
+
+    outChannels: int
+        Number of image channels that output image will have
+
+    down: bool, optional
+        If True, block will preform a 2D convolution, else will preform a 
+        transpose convolution
+
+    act: string, optional
+        If "relu", activation function applied to output will be ReLU.
+        If "leaky", activation function applied to output will be LeakyReLU
+
+    useDropout: bool, optional
+        If True, Dropot will be applied to the output. This will zero random 
+        elements of the output image.
+        This has been proben to improve regularsation and is required by the 
+        pix2pix paper
+    """
+    def __init__(self, inChannels, outChannels, down=True, act="relu", useDropout=False):
         super(Block, self).__init__()
-        self.conv = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, 4, 2, 1, bias=False, padding_mode="reflect")
+        self.block = nn.Sequential(
+            # Operation to preformed on input if down parameter is True
+            nn.Conv2d(
+                inChannels, outChannels, kernel_size=4, stride=2, padding=1,
+                bias=False, padding_mode="reflect",
+            )
             if down
-            else nn.ConvTranspose2d(in_channels, out_channels, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(out_channels),
+            # Operation to preformed on input if down parameter is False
+            else nn.ConvTranspose2d(inChannels, outChannels, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(outChannels),
+            # Apply activation function depending on the act parameter
             nn.ReLU() if act == "relu" else nn.LeakyReLU(0.2),
         )
 
-        self.use_dropout = use_dropout
+        self.useDropout = useDropout
+        # Probability of element to be zerod in Dropout is 0.5, as described 
+        # in original paper
         self.dropout = nn.Dropout(0.5)
         self.down = down
 
     def forward(self, x):
-        x = self.conv(x)
-        return self.dropout(x) if self.use_dropout else x
+        """
+        Returns output of convolutional blocks of a UNET block when called
+
+        Parameters
+        ----------
+        x: torch.FloatTensor
+            Input tensor to be passed through convolutional block
+
+        Returns
+        -------
+        output: torch.FloatTensor
+            Tensor containing output image of the convolutional block
+        """
+        x = self.block(x)
+        return self.dropout(x) if self.useDropout else x
 
 
 class Generator(nn.Module):
+    """
+    A torch.nn.Module instance containing a UNET neural network used by the 
+    pix2pix generator. 
+    """
     def __init__(self, in_channels=3, features=64):
         super().__init__()
         self.initial_down = nn.Sequential(
