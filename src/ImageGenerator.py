@@ -33,7 +33,6 @@ class ImageGenerator(Dataset):
     maxJitter: float
         The maximum (and minimum) value of pixel shift. 
 
-
     Atributes
     ---------
     ftPsf: torch.ConplexFloatTensor

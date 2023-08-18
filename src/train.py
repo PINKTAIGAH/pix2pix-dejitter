@@ -103,8 +103,7 @@ def main():
 
     # Initialise training dataset and dataloader
     #train_dataset = JitteredDataset(config.IMAGE_SIZE, 1000) 
-    train_dataset = FileDataset(config.TRAIN_DIR, config.IMAGE_SIZE,
-                                config.MAX_JITTER, config.transformsFile) 
+    train_dataset = FileDataset(config.TRAIN_DIR, config.IMAGE_SIZE,) 
     train_loader = DataLoader(
         train_dataset,
         batch_size=config.BATCH_SIZE,
@@ -118,8 +117,7 @@ def main():
 
     # Initialise validation dataset and dataloader
     #val_dataset = JitteredDataset(config.IMAGE_SIZE, 500,) 
-    val_dataset = FileDataset(config.VAL_DIR, config.IMAGE_SIZE,
-                                config.MAX_JITTER, config.transformsFile) 
+    val_dataset = FileDataset(config.VAL_DIR, config.IMAGE_SIZE,) 
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
     """
     Training loop
