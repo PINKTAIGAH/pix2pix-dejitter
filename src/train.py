@@ -1,130 +1,144 @@
 import torch
-from utils import saveCheckpoint, loadCheckpoint, saveSomeExamples
+from utils import findMin, save_checkpoint, load_checkpoint, save_some_examples, findCorrelation
 import torch.nn as nn
 import torch.optim as optim
 import config
-from dataset import JitteredDataset 
+from dataset import JitteredDataset  
+from datasetCells import CellDataset 
 from generator import Generator
 from discriminator import Discriminator
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from torchvision.utils import save_image
-from torch.utils.tensorboard.writer import SummaryWriter
-import torchvision
+from torchvision.utils import save_image, make_grid
+import numpy as np
 
-# torch.backends.cudnn.benchmark = True
+torch.backends.cudnn.benchmark = True
 
 
-def train(discriminator, generator, loader, optimiserDiscriminator,
-          optimiserGenerator, l1Loss, bce, gScaler, dScaler):
-
+def train_fn(
+    disc, gen, loader, opt_disc, opt_gen, l1_loss, bce, g_scaler, d_scaler,
+    epoch, val_loader, correlation_list 
+    ):
     loop = tqdm(loader, leave=True)
     step = 0
 
     for idx, (x, y) in enumerate(loop):
         x = x.to(config.DEVICE)
         y = y.to(config.DEVICE)
+        correlation_batch_list = []
 
         # Train Discriminator
         with torch.cuda.amp.autocast():
-            yFake = generator(x)
-            discriminatorReal = discriminator(x, y)
-            discriminatorRealLoss = bce(discriminatorReal,
-                                        torch.ones_like(discriminatorReal))
-            discriminatorFake = discriminator(x, yFake.detach())
-            discriminatorFakeLoss = bce(discriminatorFake,
-                              torch.zeros_like(discriminatorFake))
-            discriminatorLoss = (discriminatorRealLoss + discriminatorFakeLoss) / 2
+            y_fake = gen(x)
+            D_real = disc(x, y)
+            D_real_loss = bce(D_real, torch.ones_like(D_real))
+            D_fake = disc(x, y_fake.detach())
+            D_fake_loss = bce(D_fake, torch.zeros_like(D_fake))
+            D_loss = (D_real_loss + D_fake_loss) / 2
 
-        discriminator.zero_grad()
-        dScaler.scale(discriminatorLoss).backward()
-        dScaler.step(optimiserDiscriminator)
-        dScaler.update()
+        disc.zero_grad()
+        d_scaler.scale(D_loss).backward()
+        d_scaler.step(opt_disc)
+        d_scaler.update()
 
         # Train generator
         with torch.cuda.amp.autocast():
-            discriminatorFake = discriminator(x, yFake)
-            generatorFakeLoss = bce(discriminatorFake,
-                              torch.ones_like(discriminatorFake))
-            L1 = l1Loss(yFake, y) * config.L1_LAMBDA
-            generatorLoss = generatorFakeLoss + L1
+            D_fake = disc(x, y_fake)
+            G_fake_loss = bce(D_fake, torch.ones_like(D_fake))
+            L1 = l1_loss(y_fake, y) * config.L1_LAMBDA
+            G_loss = G_fake_loss + L1
 
-        optimiserGenerator.zero_grad()
-        gScaler.scale(generatorLoss).backward()
-        gScaler.step(optimiserGenerator)
-        gScaler.update()
+        opt_gen.zero_grad()
+        g_scaler.scale(G_loss).backward()
+        g_scaler.step(opt_gen)
+        g_scaler.update()
 
         if idx % 10 == 0:
             loop.set_postfix(
-                discriminatorReal=torch.sigmoid(discriminatorReal).mean().item(),
-                discriminatorFake=torch.sigmoid(discriminatorFake).mean().item(),
+                D_real=torch.sigmoid(D_real).mean().item(),
+                D_fake=torch.sigmoid(D_fake).mean().item(),
             )
-	
-    
         with torch.no_grad():
-            fakeSample = generator(x) 
-            imageGridReal = torchvision.utils.make_grid(y[:32], normalize=True)
-            imageGridFake = torchvision.utils.make_grid(fakeSample[:32], normalize=True)
+            correlation_batch_list.append(findCorrelation(gen, val_loader).item())
+
+    correlation_list.append(sum(correlation_batch_list)/len(correlation_batch_list))
+    return correlation_list
+    """
+        with torch.no_grad():
+            fakeSample = gen(x) 
+            imageGridReal = make_grid(y[:6], normalize=True)
+            imageGridFake = make_grid(fakeSample[:6], normalize=True)
 
             config.WRITER_REAL.add_image("real", imageGridReal, global_step=step)
             config.WRITER_FAKE.add_image("fake", imageGridFake, global_step=step)
 
             step +=1
-
-   
+    
+    with torch.no_grad():
+        config.WRITER_REAL.add_scalar("discriminator real", torch.sigmoid(D_real).mean().item(), epoch)
+        config.WRITER_FAKE.add_scalar("discriminator fake", torch.sigmoid(D_fake).mean().item(), epoch)
+        config.WRITER_REAL.add_scalar("discriminator loss", D_loss.item(), epoch)
+        config.WRITER_REAL.add_scalar("generator loss", G_loss.item(), epoch)
+        config.WRITER_REAL.add_scalar("correlation", findCorrelation(gen, val_loader), epoch)
+    """
 
 def main():
-    discriminator = Discriminator(inChannel=config.CHANNELS_IMAGE).to(config.DEVICE)
-    generator = Generator(inChannels=config.CHANNELS_IMAGE, features=64).to(config.DEVICE)
-
-    optimiserDiscriminator = optim.Adam(discriminator.parameters(),
-                                        lr=config.LEARNING_RATE, betas=(0.5, 0.999),)
-    optimiserGenerator = optim.Adam(generator.parameters(),
-                                    lr=config.LEARNING_RATE, betas=(0.5, 0.999))
-
+    disc = Discriminator(in_channels=config.CHANNELS_IMG).to(config.DEVICE)
+    gen = Generator(in_channels=1, features=64).to(config.DEVICE)
+    opt_disc = optim.Adam(disc.parameters(), lr=config.LEARNING_RATE, betas=(0.5, 0.999),)
+    opt_gen = optim.Adam(gen.parameters(), lr=config.LEARNING_RATE, betas=(0.5, 0.999))
     BCE = nn.BCEWithLogitsLoss()
     L1_LOSS = nn.L1Loss()
 
+
     if config.LOAD_MODEL:
-        loadCheckpoint(
-            config.CHECKPOINT_GEN, generator,
-            optimiserGenerator, config.LEARNING_RATE,
+        load_checkpoint(
+            config.CHECKPOINT_GEN, gen, opt_gen, config.LEARNING_RATE,
         )
-        loadCheckpoint(
-            config.CHECKPOINT_DISC, discriminator,
-            optimiserDiscriminator, config.LEARNING_RATE,
+        load_checkpoint(
+            config.CHECKPOINT_DISC, disc, opt_disc, config.LEARNING_RATE,
         )
 
-    trainDataset = JitteredDataset(config.IMAGE_SIZE, config.IMAGE_JITTER, length=4096)
-    trainLoader = DataLoader(
-        trainDataset,
+    #train_dataset = JitteredDataset(config.IMAGE_SIZE, 1000) 
+    train_dataset = CellDataset(config.TRAIN_DIR, config.IMAGE_SIZE,
+                                config.MAX_JITTER, config.transformsCell) 
+    
+    train_loader = DataLoader(
+        train_dataset,
         batch_size=config.BATCH_SIZE,
         shuffle=True,
-        num_workers=config.N_WORKERS,
+        num_workers=config.NUM_WORKERS,
     )
-    gScaler = torch.cuda.amp.GradScaler()
-    dScaler = torch.cuda.amp.GradScaler()
+    g_scaler = torch.cuda.amp.GradScaler()
+    d_scaler = torch.cuda.amp.GradScaler()
+    #val_dataset = JitteredDataset(config.IMAGE_SIZE, 500,) 
+    val_dataset = CellDataset(config.VAL_DIR, config.IMAGE_SIZE,
+                                config.MAX_JITTER, config.transformsCell) 
+    val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
+    correlation_list = []
+    
+    """
+    schedular_disc = optim.lr_scheduler.ReduceLROnPlateau(opt_disc, mode="min",
+                                                          factor=config.SCHEDULAR_DECAY,
+                                                          patience=config.SCHEDULAR_PATIENCE,
+                                                          verbose=True)
+    schedular_gen = optim.lr_scheduler.ReduceLROnPlateau(opt_gen, mode="min",
+                                                         factor=config.SCHEDULAR_DECAY,
+                                                         patience=config.SCHEDULAR_PATIENCE,
+                                                         verbose=True)
+    """
 
-    validationDataset = JitteredDataset(config.IMAGE_SIZE, config.IMAGE_JITTER, length=128)
-    validationLoader = DataLoader(validationDataset, batch_size=1, shuffle=False)
-
-    for epoch in range(config.N_EPOCHS):
-        train(
-            discriminator, generator, trainLoader, optimiserDiscriminator,
-            optimiserGenerator, L1_LOSS, BCE, gScaler, dScaler,
-        )
+    for epoch in range(config.NUM_EPOCHS):
+        correlation_list = train_fn(
+            disc, gen, train_loader, opt_disc, opt_gen, L1_LOSS, BCE,
+            g_scaler, d_scaler, epoch, val_loader, correlation_list)
 
         if config.SAVE_MODEL and epoch % 5 == 0:
-            saveCheckpoint(generator, optimiserGenerator,
-                           filename=config.CHECKPOINT_GEN)
-            saveCheckpoint(discriminator, optimiserDiscriminator,
-                           filename=config.CHECKPOINT_DISC)
+            save_checkpoint(gen, opt_gen, filename=config.CHECKPOINT_GEN)
+            save_checkpoint(disc, opt_disc, filename=config.CHECKPOINT_DISC)
 
-        if epoch % 50 == 0:
-            saveSomeExamples(generator, validationLoader, epoch, folder="evaluation")
-
-    config.WRITER_REAL.close()
-    config.WRITER_FAKE.close()
+        save_some_examples(gen, val_loader, epoch, folder="evaluation")
+    np.savetxt("raw_data/correlation.txt", np.array(correlation_list), delimiter=',')
 
 if __name__ == "__main__":
     main()

@@ -1,52 +1,56 @@
-from torch.utils.tensorboard.writer import SummaryWriter
+from skimage.filters import gaussian
+import numpy as np
 import torch
-#import albumentations as A
-#from albumentations.pytorch import ToTensorV2
+from torch.utils.tensorboard.writer import SummaryWriter
+from torchvision.transforms import transforms as transform
 
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu") 
-TRAIN_DIR = "/media/giorgio/HDD/GAN/pix2pix/datasets/maps/maps/train/"
-VAL_DIR = "/media/giorgio/HDD/GAN/pix2pix/datasets/maps/maps/val/"
-IMAGE_SIZE = 256
-IMAGE_JITTER = 3
+
+def normalise(x):
+    if np.sum(x) == 0:
+        raise Exception("Divided by zero. Attempted to normalise a zero tensor")
+
+    return x/np.sum(x**2)
+
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+TRAIN_DIR = "/home/giorgio/Desktop/p06_images/train/"
+# TRAIN_DIR = "/home/brunicam/myscratch/p3_scratch/p06_images/train/"
+VAL_DIR = "/home/giorgio/Desktop/p06_images/val/"
+# VAL_DIR = "/home/brunicam/myscratch/p3_scratch/p06_images/val/"
 LEARNING_RATE = 2e-4
-BATCH_SIZE = 64 
-N_WORKERS = 2
-IMAGE_SIZE = 256
-CHANNELS_IMAGE = 1
+BATCH_SIZE = 32
+SCHEDULAR_DECAY = 0.5
+SCHEDULAR_PATIENCE = 20
+NUM_WORKERS = 2
+MAX_JITTER = 4
+PADDING_WIDTH = 30
+IMAGE_SIZE = 256 
+NOISE_SIZE = IMAGE_SIZE - PADDING_WIDTH*2
+SIGMA = 20
+CHANNELS_IMG = 1 
 L1_LAMBDA = 100
 LAMBDA_GP = 10
-N_EPOCHS = 500
-LOAD_MODEL = True 
-SAVE_MODEL = True 
-WRITER_REAL = SummaryWriter("runs/real")
-WRITER_FAKE = SummaryWriter("runs/fake")
+CORRELATION_LENGTH = 10
+NUM_EPOCHS =  1000
+LOAD_MODEL = False 
+SAVE_MODEL = True
 CHECKPOINT_DISC = "disc.pth.tar"
 CHECKPOINT_GEN = "gen.pth.tar"
-SOBEL_KERNAL = torch.tensor(
-    [
-        [-1, 0, 1],
-        [-2, 0, 2],
-        [-1, 0, 1]
-    ], dtype=torch.float32
-)
-"""
-bothTransform = A.Compose(
-    [A.Resize(width=256, height=256),], additional_targets={"image0": "image"},
-)
+# WRITER_REAL = SummaryWriter("/home/brunicam/myscratch/p3_scratch/runs/real")
+# WRITER_FAKE = SummaryWriter("/home/brunicam/myscratch/p3_scratch/runs/fake")
 
-transformOnlyInput = A.Compose(
-    [
-        A.HorizontalFlip(p=0.5),
-        A.ColorJitter(p=0.2),
-        A.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5], max_pixel_value=255.0,),
-        ToTensorV2(),
-    ]
-)
+kernal = np.zeros((NOISE_SIZE, NOISE_SIZE))
+kernal[NOISE_SIZE//2, NOISE_SIZE//2] = 1
+PSF = torch.from_numpy(normalise(gaussian(kernal, SIGMA)))
 
-transformOnlyMask = A.Compose(
-    [
-        A.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5], max_pixel_value=255.0,),
-        ToTensorV2(),
-    ]
-)
-"""
+transforms = transform.Compose([
+    transform.Normalize(
+        [0.5 for _ in range(CHANNELS_IMG)],   # generalise for multi channel
+        [0.5 for _ in range(CHANNELS_IMG)],
+    ),
+])
+
+transformsCell = transform.Compose([
+    transform.ToTensor(),
+    transform.RandomCrop(IMAGE_SIZE),
+    transform.Grayscale(),
+])
