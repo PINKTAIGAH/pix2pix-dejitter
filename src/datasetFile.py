@@ -1,17 +1,13 @@
-from skimage import transform
-import numpy as np
 from PIL import Image
 import os
 import torch
 import utils
 import config
-from torchvision.datasets import MNIST, PCAM
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 from ImageGenerator import ImageGenerator
-from torchvision.utils import save_image
 import matplotlib.pyplot as plt
 
-class CellDataset(Dataset):
+class FileDataset(Dataset):
     def __init__(self, rootDirectory, imageSize, maxJitter, transform):
         self.rootDirectory = rootDirectory
         self.listFiles = os.listdir(self.rootDirectory)
@@ -37,7 +33,7 @@ class CellDataset(Dataset):
         groundTruth = self.getImage(index)
         groundTruth = torch.squeeze(groundTruth, 0)
 
-        flowMapShift, flowMapUnshift , _ = self.filter.generateFlowMap()
+        flowMapShift, _, _ = self.filter.generateFlowMap()
         shifted = self.filter.shift(groundTruth, flowMapShift)
 
         groundTruth = torch.unsqueeze(groundTruth, 0)
@@ -52,8 +48,9 @@ class CellDataset(Dataset):
         return shifted, groundTruth
 
 def test():
-    dataset = CellDataset(config.VAL_DIR,
-                          config.IMAGE_SIZE, config.MAX_JITTER, config.transformsCell)
+    dataset = FileDataset(config.VAL_DIR, config.IMAGE_SIZE,
+                          config.MAX_JITTER, config.transformsFile)
+
     fig, (ax1, ax2) = plt.subplots(1, 2)
     for i in range(len(dataset)):
         x, y, = dataset[i]
