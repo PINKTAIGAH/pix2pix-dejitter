@@ -126,7 +126,9 @@ class Generator(nn.Module):
     def __init__(self, inChannels=3, features=64):
         super().__init__()
         self.initialDown = nn.Sequential(
-            nn.Conv2d(inChannels, features, 4, 2, 1, padding_mode="reflect"),
+            nn.Conv2d(
+                inChannels, features, kernel_size=4, stride=2, padding=1,
+                padding_mode="reflect"), 
             nn.LeakyReLU(0.2),
         )
         self.down1 = Block(
@@ -150,10 +152,11 @@ class Generator(nn.Module):
         self.bottleneck = nn.Sequential(
             nn.Conv2d(features * 8, features * 8, 4, 2, 1), nn.ReLU(),
         )
-
         self.up1 = Block(
             features * 8, features * 8, down=False, act="relu", useDropout=True
         )
+        # Input features are doubled as input tensor is concatinated due to skip 
+        # conneciton
         self.up2 = Block(
             features * 8 * 2, features * 8, down=False, act="relu", useDropout=True
         )
@@ -180,6 +183,7 @@ class Generator(nn.Module):
         )
 
     def forward(self, x):
+        # Encoder
         d1 = self.initialDown(x)
         d2 = self.down1(d1)
         d3 = self.down2(d2)
@@ -187,8 +191,12 @@ class Generator(nn.Module):
         d5 = self.down4(d4)
         d6 = self.down5(d5)
         d7 = self.down6(d6)
+
         bottleneck = self.bottleneck(d7)
+        # Decoder
         up1 = self.up1(bottleneck)
+        # To enforce skip connection, concatinate output of last block with 
+        # output of corresponding block from endocer.
         up2 = self.up2(torch.cat([up1, d7], 1))
         up3 = self.up3(torch.cat([up2, d6], 1))
         up4 = self.up4(torch.cat([up3, d5], 1))
@@ -199,7 +207,7 @@ class Generator(nn.Module):
 
 def test():
     x = torch.randn((1, 1, 512, 512))
-    model = Generator(in_channels=1, features=64)
+    model = Generator(inChannels=1, features=64)
     preds = model(x)
     print(preds.shape)
 
