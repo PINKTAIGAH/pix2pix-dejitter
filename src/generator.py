@@ -83,58 +83,104 @@ class Block(nn.Module):
 class Generator(nn.Module):
     """
     A torch.nn.Module instance containing a UNET neural network used by the 
-    pix2pix generator. 
+    pix2pix generator. This UNET is designed to autoencode image tensors of 
+    size 256*256.
+
+    Atributes
+    ---------
+    initialDown: torch.nn.Sequential
+        Object that will return the output of the initial convolution block of a 
+        UNET model. Does not apply batch normalisation
+
+    down1 - down7: torch.nn.Sequential
+        Objects that represent each step in the encoder section of the UNET
+
+    bottleneck: torch.nn.Sequential
+        Object that returns as output a 1*1 image tensor. 
+
+    up1 - up7: torch.nn.Sequential
+        Objects that represent each step in the decoder section of the UNET.
+        Also contains skip connections with the output of it's corresponding 
+        block from the encoder section as outlined in the original UNET paper
+
+    finalUp: torch.nn.Sequential
+        Object that outputs the final generated image tensor of the pix2pix UNET
+        generator. 
+
+        A Tanh activation function is applied to the output image tensor
+
+    Parameters
+    ----------
+    inChannels: int
+        Number of colour channels in discriminator input
+
+    features: int
+        A coefficient used to compute the number of channels generated at each 
+        convolution clock of the UNET
+
+    Notes
+    -----
+    While the UNET can take input image tensors of various sizes, it is designed
+    to optimally generate tensor images of size 256*256
     """
-    def __init__(self, in_channels=3, features=64):
+    def __init__(self, inChannels=3, features=64):
         super().__init__()
-        self.initial_down = nn.Sequential(
-            nn.Conv2d(in_channels, features, 4, 2, 1, padding_mode="reflect"),
+        self.initialDown = nn.Sequential(
+            nn.Conv2d(inChannels, features, 4, 2, 1, padding_mode="reflect"),
             nn.LeakyReLU(0.2),
         )
-        self.down1 = Block(features, features * 2, down=True, act="leaky", use_dropout=False)
+        self.down1 = Block(
+            features, features * 2, down=True, act="leaky", useDropout=False
+        )
         self.down2 = Block(
-            features * 2, features * 4, down=True, act="leaky", use_dropout=False
+            features * 2, features * 4, down=True, act="leaky", useDropout=False
         )
         self.down3 = Block(
-            features * 4, features * 8, down=True, act="leaky", use_dropout=False
+            features * 4, features * 8, down=True, act="leaky", useDropout=False
         )
         self.down4 = Block(
-            features * 8, features * 8, down=True, act="leaky", use_dropout=False
+            features * 8, features * 8, down=True, act="leaky", useDropout=False
         )
         self.down5 = Block(
-            features * 8, features * 8, down=True, act="leaky", use_dropout=False
+            features * 8, features * 8, down=True, act="leaky", useDropout=False
         )
         self.down6 = Block(
-            features * 8, features * 8, down=True, act="leaky", use_dropout=False
+            features * 8, features * 8, down=True, act="leaky", useDropout=False
         )
         self.bottleneck = nn.Sequential(
             nn.Conv2d(features * 8, features * 8, 4, 2, 1), nn.ReLU(),
         )
 
-        self.up1 = Block(features * 8, features * 8, down=False, act="relu", use_dropout=True)
+        self.up1 = Block(
+            features * 8, features * 8, down=False, act="relu", useDropout=True
+        )
         self.up2 = Block(
-            features * 8 * 2, features * 8, down=False, act="relu", use_dropout=True
+            features * 8 * 2, features * 8, down=False, act="relu", useDropout=True
         )
         self.up3 = Block(
-            features * 8 * 2, features * 8, down=False, act="relu", use_dropout=True
+            features * 8 * 2, features * 8, down=False, act="relu", useDropout=True
         )
         self.up4 = Block(
-            features * 8 * 2, features * 8, down=False, act="relu", use_dropout=False
+            features * 8 * 2, features * 8, down=False, act="relu", useDropout=False
         )
         self.up5 = Block(
-            features * 8 * 2, features * 4, down=False, act="relu", use_dropout=False
+            features * 8 * 2, features * 4, down=False, act="relu", useDropout=False
         )
         self.up6 = Block(
-            features * 4 * 2, features * 2, down=False, act="relu", use_dropout=False
+            features * 4 * 2, features * 2, down=False, act="relu", useDropout=False
         )
-        self.up7 = Block(features * 2 * 2, features, down=False, act="relu", use_dropout=False)
-        self.final_up = nn.Sequential(
-            nn.ConvTranspose2d(features * 2, in_channels, kernel_size=4, stride=2, padding=1),
+        self.up7 = Block(
+            features * 2 * 2, features, down=False, act="relu", useDropout=False
+        )
+        self.finalUp = nn.Sequential(
+            nn.ConvTranspose2d(
+                features * 2, inChannels, kernel_size=4, stride=2, padding=1
+            ),
             nn.Tanh(),
         )
 
     def forward(self, x):
-        d1 = self.initial_down(x)
+        d1 = self.initialDown(x)
         d2 = self.down1(d1)
         d3 = self.down2(d2)
         d4 = self.down3(d3)
@@ -149,8 +195,7 @@ class Generator(nn.Module):
         up5 = self.up5(torch.cat([up4, d4], 1))
         up6 = self.up6(torch.cat([up5, d3], 1))
         up7 = self.up7(torch.cat([up6, d2], 1))
-        return self.final_up(torch.cat([up7, d1], 1))
-
+        return self.finalUp(torch.cat([up7, d1], 1))
 
 def test():
     x = torch.randn((1, 1, 512, 512))
