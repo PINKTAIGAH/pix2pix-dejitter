@@ -3,7 +3,7 @@ import torch
 import config
 from torchvision.utils import save_image
 
-def save_some_examples(gen, val_loader, epoch, folder):
+def save_examples(gen, val_loader, epoch, folder):
     """
     Save examples of output from generator as png images at a specified folder
 
