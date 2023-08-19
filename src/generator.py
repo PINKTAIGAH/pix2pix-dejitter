@@ -183,6 +183,20 @@ class Generator(nn.Module):
         )
 
     def forward(self, x):
+        """
+        Returns output of UNET generator when called
+
+        Parameters
+        ----------
+        x: torch.FloatTensor
+            Input tensor to be passed through generator 
+
+        Returns
+        -------
+        output: torch.FloatTensor
+            Tensor containing output of pix2pix generator. Output size is 
+            equivalent to the size of the input image.
+        """
         # Encoder
         d1 = self.initialDown(x)
         d2 = self.down1(d1)

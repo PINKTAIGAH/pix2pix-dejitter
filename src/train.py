@@ -15,6 +15,42 @@ torch.backends.cudnn.benchmark = True
 def _trainFunction(
     disc, gen, loader, opt_disc, opt_gen, l1_loss, bce, g_scaler, d_scaler,
     ):
+    """
+    Iterate though one epoch of training for the pix2pix generator and discriminator.
+
+    Parameters
+    ----------
+    disc: torch.nn.Module instance
+        Object to return the output of the PatchGAN discriminator of pix2pix.
+
+    gen: torch.nn.Module instance
+        Object to return the output of the UNET generator of pix2pix.
+
+    loader: torch.utils.Data.DataLoader instance
+        Iterable object containing the training dataset divided into batches.
+
+    opt_disc: torch.optim instance
+        Instance of the optimiser unsed to train the discriminator. The optimiser
+        currently being used is Adam.
+
+    opt_gen: torch.optim instance
+        Instance of the optimiser unsed to train the generator. The optimiser
+        currently being used is Adam.
+
+    l1_loss: torch.nn.L1Loss instance
+        Object that retuns the output of the L1 distance between input parameters.
+
+    bce: torch.nn.BCEWithLogitsLoss instance
+        Object that returns the output of the GAN adverserial loss function.
+
+    d_scaler: torch.cuda.amp.Gradscaler instance
+        Object that will scale the type size appropiatly to allow for automatic
+        mixed precision for discriminator forward and backward pass.
+
+    g_scaler: torch.cuda.amp.Gradscaler instance
+        Object that will scale the type size appropiatly to allow for automatic
+        mixed precision for generator forward and backward pass.
+    """
     # Initialise tqdm object to visualise training in command line
     loop = tqdm(loader, leave=True)
 
