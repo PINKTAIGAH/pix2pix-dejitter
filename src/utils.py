@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 import config
-from torchvision.utils import save_image
+from torchvision.utils import save_image, make_grid
 
 def save_examples(gen, val_loader, epoch, folder):
     """
@@ -37,6 +37,47 @@ def save_examples(gen, val_loader, epoch, folder):
         save_image(y_fake, folder + f"/y_gen_{epoch}.png")
     gen.train()
 
+def save_examples_concatinated(gen, val_loader, epoch, folder, filter):
+    """
+    Save examples of output from generator as png images at a specified folder
+    As opposed to saving images seperatly, images will be concatinated and outputted
+    as a single image to increase ease to visually compare outputs from GAN
+
+    Parameters
+    ----------
+    gen: torch.nn.Module instance
+        A generator neural network that will output image (or data required to 
+        generate an output image)
+
+    val_loader: torch.utils.Data.DataLoader instance
+        A dataloader containing dataset that will be input in the generator
+    
+    epoch: int
+        Epoch at which example is being taken
+
+    folder: string
+        Directory where output image will be saved
+
+    filter: torch.utils.Data.Dataset instance
+        Class constining method required to unshift image using generator's 
+        outputted flowmap
+    """
+    x, y, _ = next(iter(val_loader))
+    x, y = x.to(config.DEVICE), y.to(config.DEVICE)
+    gen.eval()
+    with torch.no_grad():
+        # Generate flow map with generator and use it to unshift jittered image
+        unshift_map_fake  = gen(x)
+        y_fake = filter.shift(x, unshift_map_fake, isBatch=True)
+        # Remove normalisation
+        x = x * 0.5 + 0.5
+        y = y * 0.5 + 0.5
+        y_fake = y_fake * 0.5 + 0.5  
+        # Concatinate all output images in Batch axis in order to have size (3, 1, H, W)
+        output = torch.cat([x, y, y_fake], dim=0)
+        # Make image grid containing all desired output images
+        image_grid = make_grid(output)
+        save_image(image_grid, folder + f"/output_{epoch}.png")
 
 def save_checkpoint(model, optimizer, filename="my_checkpoint.pth.tar"):
     """
@@ -196,3 +237,60 @@ def adjustArray(array):
         Normalised array
     """
     return (array) / (array.max() - array.min())
+
+def write_out_value(val, filename, new_line=False):
+    """
+    Write out value to specified file. If new_line parameter is True, function
+    will write out a new line character after having written out the val parameter
+
+    Parameters
+    ----------
+    val: float or string
+        Value to bve written into file
+
+    filename: string
+        Directory of file where val will be written into
+
+    new_line: bool, optional
+        If True, function will write out a new line character after having written
+        out the specified val parameter
+    """
+    f = open(filename, "a+")
+    f.write(' ' + str(val) + ',')
+    # Add new line character to file if specified
+    if new_line:
+        f.write('\n')
+    f.close()
+    return
+
+def write_out_titles(titles, filename,):
+    """
+    Write out strings in a list to a file and once finished add a new line character.
+    Designed to write titles of a data file at the start of a file.
+
+    Parameters
+    ----------
+    titles: list of strings 
+        List containing titles to be wrtten into file
+
+    filename: string
+        Directory of file where val will be written into
+    """
+    # Iterate over titles in list
+    for idx, title in enumerate(titles):
+        # Do not add new line if not final element in list
+        if not len(titles)-1 == idx:
+            write_out_value(title, filename, new_line=False)
+        # Add new line if final element in list
+        else:
+            write_out_value(title, filename, new_line=True)
+
+def test():
+    titles = ["gen_loss", "disc_loss", "random_string"]
+    write_out_titles(titles, "../raw_data/test.txt")
+    write_out_value(4.653, "../raw_data/test.txt", new_line=False)
+    write_out_value(5.7657, "../raw_data/test.txt", new_line=False)
+    write_out_value("hello", "../raw_data/test.txt", new_line=True)
+
+if __name__ == "__main__":
+    test()

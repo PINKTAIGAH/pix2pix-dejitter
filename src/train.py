@@ -1,5 +1,5 @@
 import torch
-from utils import  save_checkpoint, load_checkpoint, save_examples
+import utils 
 import torch.nn as nn
 import torch.optim as optim
 import config
@@ -50,9 +50,18 @@ def _trainFunction(
     g_scaler: torch.cuda.amp.Gradscaler instance
         Object that will scale the type size appropiatly to allow for automatic
         mixed precision for generator forward and backward pass.
+
+    Returns
+    -------
+    output: tuple of floats
+        Tuple containing the mean generator and discriminator losses trhoughout
+        the entire epoch
     """
     # Initialise tqdm object to visualise training in command line
     loop = tqdm(loader, leave=True)
+    # Initialise running loss that will contaain cumulative sum of losses
+    running_loss_disc = 0.0
+    running_loss_gen = 0.0
 
     # Iterate over images in batch of data loader
     for idx, (x, y, _) in enumerate(loop):
@@ -103,19 +112,22 @@ def _trainFunction(
                 D_real=torch.sigmoid(D_real).mean().item(),
                 D_fake=torch.sigmoid(D_fake).mean().item(),
             )
-    """
-    with torch.no_grad():
-        config.WRITER_REAL.add_scalar("discriminator real", torch.sigmoid(D_real).mean().item(), epoch)
-        config.WRITER_FAKE.add_scalar("discriminator fake", torch.sigmoid(D_fake).mean().item(), epoch)
-        config.WRITER_REAL.add_scalar("discriminator loss", D_loss.item(), epoch)
-        config.WRITER_REAL.add_scalar("generator loss", G_loss.item(), epoch)
-        config.WRITER_REAL.add_scalar("correlation", findCorrelation(gen, val_loader), epoch)
-    """
+
+        # Add current loss to the running loss
+        running_loss_gen += G_loss.mean().item()
+        running_loss_disc += D_loss.mean().item()
+
+    # Create tuple with output values
+    output = (
+        running_loss_disc/config.BATCH_SIZE,
+        running_loss_gen/config.BATCH_SIZE 
+    ) 
+    return output 
 
 def main():
     # Define discriminator and generator objects 
-    disc = Discriminator(in_channels=config.CHANNELS_IMG).to(config.DEVICE)
-    gen = Generator(in_channels=1, features=64).to(config.DEVICE)
+    disc = Discriminator(inChannels=config.CHANNELS_IMG).to(config.DEVICE)
+    gen = Generator(inChannels=1, features=64).to(config.DEVICE)
     # Define optimiser for both discriminator and generator
     opt_disc = optim.Adam(
         disc.parameters(), lr=config.LEARNING_RATE, betas=config.OPTIMISER_WEIGHTS
@@ -130,10 +142,10 @@ def main():
 
     # Load previously saved models and optimisers if True
     if config.LOAD_MODEL:
-        load_checkpoint(
+        utils.load_checkpoint(
             config.CHECKPOINT_GEN, gen, opt_gen, config.LEARNING_RATE,
         )
-        load_checkpoint(
+        utils.load_checkpoint(
             config.CHECKPOINT_DISC, disc, opt_disc, config.LEARNING_RATE,
         )
 
@@ -161,18 +173,34 @@ def main():
     # Iterte over epochs
     for epoch in range(config.NUM_EPOCHS):
         # Train one iteration of generator and discriminator
-        _trainFunction(
+        # Model losses has two elements, disc loss and gen loss respectivly
+        model_losses = _trainFunction(
             disc, gen, train_loader, opt_disc, opt_gen, L1_LOSS, BCE,
             g_scaler, d_scaler,)
 
+        if epoch == 0:
+            utils.write_out_titles(config.MODEL_LOSSES_TITLES, config.MODEL_LOSSES_FILE)
+            
+        # Write out epoch and men loss lavue per epoch. Start new line once compleated
+        utils.write_out_value(epoch, config.MODEL_LOSSES_FILE, new_line=False)    
+        utils.write_out_value(model_losses[0], config.MODEL_LOSSES_FILE, new_line=False)    
+        utils.write_out_value(model_losses[1], config.MODEL_LOSSES_FILE, new_line=True)    
+
         # Save images of ground truth, jittered and generated unjittered images 
         # using models of current epoch
-        save_examples(gen, val_loader, epoch, folder="evaluation")
+        utils.save_examples_concatinated(gen, val_loader, epoch,
+                                         folder="evaluation", filter=filter)
+
+        ### Temporary ###
+        # Save images of ground truth, jittered and generated unjittered images 
+        # using models of current epoch
+        # save_examples(gen, val_loader, epoch, folder="evaluation")
+        ### Temporary ###
 
         # Save models and optimisers every 5 epochs
         if config.SAVE_MODEL and epoch % 5 == 0:
-            save_checkpoint(gen, opt_gen, filename=config.CHECKPOINT_GEN)
-            save_checkpoint(disc, opt_disc, filename=config.CHECKPOINT_DISC)
+            utils.save_checkpoint(gen, opt_gen, filename=config.CHECKPOINT_GEN)
+            utils.save_checkpoint(disc, opt_disc, filename=config.CHECKPOINT_DISC)
 
 if __name__ == "__main__":
     main()
