@@ -200,9 +200,9 @@ def main():
         utils.write_out_value(model_losses[1], config.MODEL_LOSSES_FILE, new_line=True)    
 
         # Write out epoch and then critic score per epoch. Start new line once compleated
-        utils.write_out_value(epoch, config.MODEL_LOSSES_FILE, new_line=False)    
-        utils.write_out_value(model_losses[2], config.MODEL_LOSSES_FILE, new_line=False)    
-        utils.write_out_value(model_losses[3], config.MODEL_LOSSES_FILE, new_line=True)    
+        utils.write_out_value(epoch, config.CRITIC_SCORE_FILE, new_line=False)    
+        utils.write_out_value(model_losses[2], config.CRITIC_SCORE_FILE, new_line=False)    
+        utils.write_out_value(model_losses[3], config.CRITIC_SCORE_FILE, new_line=True)    
         # Save images of ground truth, jittered and generated unjittered images 
         # using models of current epoch
         utils.save_examples_concatinated(gen, val_loader, epoch,
