@@ -138,7 +138,7 @@ def test():
             ax1.imshow(x[0], animated=True)
             ax2.imshow(y[0], animated=True)
             plt.draw()
-            plt.pause(0.5)
+            plt.pause(1)
         print(i)
     
 

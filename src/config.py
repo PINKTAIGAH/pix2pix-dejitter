@@ -44,10 +44,10 @@ Hyper Parameters
 """
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Directory of files containing image datasets
-TRAIN_DIR = "/home/giorgio/Desktop/p06_images/train/"
-# TRAIN_DIR = "/home/brunicam/myscratch/p3_scratch/p06_images/train/"
-VAL_DIR = "/home/giorgio/Desktop/p06_images/val/"
-# VAL_DIR = "/home/brunicam/myscratch/p3_scratch/p06_images/val/"
+# TRAIN_DIR = "/home/giorgio/Desktop/p06_images/train/"
+TRAIN_DIR = "/home/brunicam/myscratch/p3_scratch/p06_images/train/"
+# VAL_DIR = "/home/giorgio/Desktop/p06_images/val/"
+VAL_DIR = "/home/brunicam/myscratch/p3_scratch/p06_images/val/"
 LEARNING_RATE = 2e-4
 BATCH_SIZE = 32
 SCHEDULAR_DECAY = 0.5
