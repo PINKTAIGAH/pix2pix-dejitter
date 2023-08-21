@@ -62,13 +62,13 @@ def save_examples_concatinated(gen, val_loader, epoch, folder, filter):
         Class constining method required to unshift image using generator's 
         outputted flowmap
     """
+    # Unpack jittered (x) and ground truth (y) images from dataloader and send to device
     x, y, _ = next(iter(val_loader))
     x, y = x.to(config.DEVICE), y.to(config.DEVICE)
     gen.eval()
     with torch.no_grad():
-        # Generate flow map with generator and use it to unshift jittered image
-        unshift_map_fake  = gen(x)
-        y_fake = filter.shift(x, unshift_map_fake, isBatch=True)
+        # Generate unshifted image using the GAN's generator network
+        y_fake = gen(x)
         # Remove normalisation
         x = x * 0.5 + 0.5
         y = y * 0.5 + 0.5
