@@ -125,7 +125,7 @@ class FileDataset(Dataset):
         return shifted, groundTruth, flowMapUnshift
 
 def test():
-    dataset = FileDataset(config.VAL_DIR, config.IMAGE_SIZE,)
+    dataset = FileDataset(config.TRAIN_DIR, config.IMAGE_SIZE,)
 
     fig, (ax1, ax2) = plt.subplots(1, 2)
     for i in range(len(dataset)):

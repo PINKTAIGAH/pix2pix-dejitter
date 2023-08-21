@@ -62,6 +62,8 @@ def _trainFunction(
     # Initialise running loss that will contaain cumulative sum of losses
     running_loss_disc = 0.0
     running_loss_gen = 0.0
+    running_disc_real = 0.0
+    running_disc_fake = 0.0
 
     # Iterate over images in batch of data loader
     for idx, (x, y, _) in enumerate(loop):
@@ -117,10 +119,16 @@ def _trainFunction(
         running_loss_gen += G_loss.mean().item()
         running_loss_disc += D_loss.mean().item()
 
+        # Add current loss to the running loss
+        running_disc_real += D_real.mean().item()
+        running_disc_fake += D_fake.mean().item()
+
     # Create tuple with output values
     output = (
         running_loss_disc/config.BATCH_SIZE,
-        running_loss_gen/config.BATCH_SIZE 
+        running_loss_gen/config.BATCH_SIZE,
+        running_disc_real/config.BATCH_SIZE,
+        running_disc_fake/config.BATCH_SIZE,
     ) 
     return output 
 
@@ -181,11 +189,15 @@ def main():
         if epoch == 0:
             utils.write_out_titles(config.MODEL_LOSSES_TITLES, config.MODEL_LOSSES_FILE)
             
-        # Write out epoch and men loss lavue per epoch. Start new line once compleated
+        # Write out epoch and then loss per epoch. Start new line once compleated
         utils.write_out_value(epoch, config.MODEL_LOSSES_FILE, new_line=False)    
         utils.write_out_value(model_losses[0], config.MODEL_LOSSES_FILE, new_line=False)    
         utils.write_out_value(model_losses[1], config.MODEL_LOSSES_FILE, new_line=True)    
 
+        # Write out epoch and then critic score per epoch. Start new line once compleated
+        utils.write_out_value(epoch, config.MODEL_LOSSES_FILE, new_line=False)    
+        utils.write_out_value(model_losses[2], config.MODEL_LOSSES_FILE, new_line=False)    
+        utils.write_out_value(model_losses[3], config.MODEL_LOSSES_FILE, new_line=True)    
         # Save images of ground truth, jittered and generated unjittered images 
         # using models of current epoch
         utils.save_examples_concatinated(gen, val_loader, epoch,
