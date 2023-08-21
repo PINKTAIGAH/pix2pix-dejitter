@@ -66,8 +66,8 @@ CORRELATION_LENGTH = 10
 NUM_EPOCHS =  1000
 LOAD_MODEL = False 
 SAVE_MODEL = True
-CHECKPOINT_DISC = "disc.pth.tar"
-CHECKPOINT_GEN = "gen.pth.tar"
+CHECKPOINT_DISC = "../models/disc.pth.tar"
+CHECKPOINT_GEN = "../models/gen.pth.tar"
 MODEL_LOSSES_FILE = "../raw_data/model_losses.txt"
 MODEL_LOSSES_TITLES = ["epoch", "disc_loss", "gen_loss"]
 
