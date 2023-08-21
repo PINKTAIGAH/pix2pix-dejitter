@@ -172,9 +172,14 @@ def main():
     d_scaler = torch.cuda.amp.GradScaler()
 
     # Initialise validation dataset and dataloader
-    #val_dataset = JitteredDataset(config.IMAGE_SIZE, 500,) 
-    val_dataset = FileDataset(config.VAL_DIR, config.IMAGE_SIZE,) 
-    val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
+    # val_dataset = JitteredDataset(config.IMAGE_SIZE, 500,) 
+
+    # val_dataset = FileDataset(config.VAL_DIR, config.IMAGE_SIZE,) 
+    # val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
+    ### Temporary ###
+    val_dataset = FileDataset(config.TRAIN_DIR, config.IMAGE_SIZE,) 
+    val_loader = DataLoader(val_dataset, batch_size=1, shuffle=True)
+    ### Temporary ###
     """
     Training loop
     """
