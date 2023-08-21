@@ -120,8 +120,8 @@ def _trainFunction(
         running_loss_disc += D_loss.mean().item()
 
         # Add current loss to the running loss
-        running_disc_real += D_real.mean().item()
-        running_disc_fake += D_fake.mean().item()
+        running_disc_real += torch.sigmoid(D_real).mean().item()
+        running_disc_fake += torch.sigmoid(D_fake).mean().item()
 
     # Create tuple with output values
     output = (
