@@ -208,7 +208,7 @@ def main():
         # Save images of ground truth, jittered and generated unjittered images 
         # using models of current epoch
         utils.save_examples_concatinated(gen, val_loader, epoch,
-                                         folder="../evaluation",)
+                                         folder=config.EVALUATION_IMAGE_FILE,)
 
         ### Temporary ###
         # Save images of ground truth, jittered and generated unjittered images 

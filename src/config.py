@@ -70,6 +70,7 @@ CHECKPOINT_DISC = "../models/disc.pth.tar"
 CHECKPOINT_GEN = "../models/gen.pth.tar"
 MODEL_LOSSES_FILE = "../raw_data/model_losses.txt"
 MODEL_LOSSES_TITLES = ["epoch", "disc_loss", "gen_loss"]
+EVALUATION_IMAGE_FILE= "../evaluation/default"
 
 CRITIC_SCORE_FILE = "../raw_data/critic_score.txt"
 CRITIC_SCORE_TITLES = ["epoch", "disc_real", "disc_fake"]
@@ -79,6 +80,10 @@ CRITIC_SCORE_TITLES = ["epoch", "disc_real", "disc_fake"]
 # Generate a point spread finction by applying a gaussian blur to a point function
 pointFunction = _generatePointFunction()
 PSF = torch.from_numpy(_normalise(gaussian(pointFunction, SIGMA))).type(torch.float32)
+
+"""
+Tensor Transformations
+"""
 
 transforms = transform.Compose([
     transform.Normalize(
@@ -92,3 +97,8 @@ transformsFile = transform.Compose([
     transform.RandomCrop(IMAGE_SIZE),
     transform.Grayscale(),
 ])
+
+"""
+Hyperparameter overwriting for automatic bash scripts 
+"""
+
