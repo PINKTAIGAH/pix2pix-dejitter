@@ -143,7 +143,7 @@ def main():
         disc.parameters(), lr=config.LEARNING_RATE, betas=config.OPTIMISER_WEIGHTS
     )
     opt_gen = optim.Adam(
-        disc.parameters(), lr=config.LEARNING_RATE, betas=config.OPTIMISER_WEIGHTS
+        gen.parameters(), lr=config.LEARNING_RATE, betas=config.OPTIMISER_WEIGHTS
     )
 
     # Define GAN adverserial loss (BCE) and L1 loss of pix2pix
@@ -160,7 +160,7 @@ def main():
         )
 
     # Initialise training dataset and dataloader
-    train_dataset = JitteredDataset( 1000) 
+    train_dataset = JitteredDataset(1000) 
     # train_dataset = FileDataset(config.TRAIN_DIR, config.IMAGE_SIZE,) 
     train_loader = DataLoader(
         train_dataset,
@@ -208,7 +208,7 @@ def main():
         # Save images of ground truth, jittered and generated unjittered images 
         # using models of current epoch
         utils.save_examples_concatinated(gen, val_loader, epoch,
-                                         folder="../evaluation", filter=filter)
+                                         folder="../evaluation",)
 
         ### Temporary ###
         # Save images of ground truth, jittered and generated unjittered images 

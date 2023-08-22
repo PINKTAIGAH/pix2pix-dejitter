@@ -37,7 +37,7 @@ def save_examples(gen, val_loader, epoch, folder):
         save_image(y_fake, folder + f"/y_gen_{epoch}.png")
     gen.train()
 
-def save_examples_concatinated(gen, val_loader, epoch, folder, filter):
+def save_examples_concatinated(gen, val_loader, epoch, folder):
     """
     Save examples of output from generator as png images at a specified folder
     As opposed to saving images seperatly, images will be concatinated and outputted
