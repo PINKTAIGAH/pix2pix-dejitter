@@ -220,7 +220,7 @@ class Generator(nn.Module):
         return self.finalUp(torch.cat([up7, d1], 1))
 
 def test():
-    x = torch.randn((1, 1, 512, 512))
+    x = torch.randn((1, 1, 256, 256))
     model = Generator(inChannels=1, features=64)
     preds = model(x)
     print(preds.shape)
