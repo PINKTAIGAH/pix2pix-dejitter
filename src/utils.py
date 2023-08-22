@@ -255,12 +255,13 @@ def write_out_value(val, filename, new_line=False):
         If True, function will write out a new line character after having written
         out the specified val parameter
     """
-    f = open(filename, "a+")
-    f.write(' ' + str(val) + ',')
-    # Add new line character to file if specified
-    if new_line:
-        f.write('\n')
-    f.close()
+    with torch.no_grad():
+        f = open(filename, "a+")
+        f.write(' ' + str(val) + ',')
+        # Add new line character to file if specified
+        if new_line:
+            f.write('\n')
+        f.close()
     return
 
 def write_out_titles(titles, filename,):
@@ -276,14 +277,15 @@ def write_out_titles(titles, filename,):
     filename: string
         Directory of file where val will be written into
     """
-    # Iterate over titles in list
-    for idx, title in enumerate(titles):
-        # Do not add new line if not final element in list
-        if not len(titles)-1 == idx:
-            write_out_value(title, filename, new_line=False)
-        # Add new line if final element in list
-        else:
-            write_out_value(title, filename, new_line=True)
+    with torch.no_grad()
+        # Iterate over titles in list
+        for idx, title in enumerate(titles):
+            # Do not add new line if not final element in list
+            if not len(titles)-1 == idx:
+                write_out_value(title, filename, new_line=False)
+            # Add new line if final element in list
+            else:
+                write_out_value(title, filename, new_line=True)
 
 def test():
     titles = ["gen_loss", "disc_loss", "random_string"]
