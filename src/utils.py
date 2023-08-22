@@ -277,7 +277,7 @@ def write_out_titles(titles, filename,):
     filename: string
         Directory of file where val will be written into
     """
-    with torch.no_grad()
+    with torch.no_grad():
         # Iterate over titles in list
         for idx, title in enumerate(titles):
             # Do not add new line if not final element in list
