@@ -78,6 +78,7 @@ def save_examples_concatinated(gen, val_loader, epoch, folder, filter):
         # Make image grid containing all desired output images
         image_grid = make_grid(output)
         save_image(image_grid, folder + f"/output_{epoch}.png")
+    gen.train()
 
 def save_checkpoint(model, optimizer, filename="my_checkpoint.pth.tar"):
     """

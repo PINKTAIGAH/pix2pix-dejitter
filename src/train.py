@@ -125,12 +125,13 @@ def _trainFunction(
             running_disc_fake += torch.sigmoid(D_fake).mean().item()
 
     # Create tuple with output values
-    output = (
-        running_loss_disc/config.BATCH_SIZE,
-        running_loss_gen/config.BATCH_SIZE,
-        running_disc_real/config.BATCH_SIZE,
-        running_disc_fake/config.BATCH_SIZE,
-    ) 
+    with torch.no_grad():
+        output = (
+            running_loss_disc/config.BATCH_SIZE,
+            running_loss_gen/config.BATCH_SIZE,
+            running_disc_real/config.BATCH_SIZE,
+            running_disc_fake/config.BATCH_SIZE,
+        ) 
     return output 
 
 def main():
