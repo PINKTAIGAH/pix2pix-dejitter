@@ -55,6 +55,12 @@ with torch.no_grad():
             print(L1(y, y_fake).item())
             l1_list.append(L1(y, y_fake).item())
  
+        # Save example of image
+        if epoch+1 % 5 == 0:
+            utils.save_examples_concatinated(
+                gen, val_loader, epoch, config.EVALUATION_IMAGE_FILE
+            )
+
 l1_output = sum(l1_list)/len(l1_list)
 utils.write_out_value(config.SIGMA, config.EVALUATION_METRIC_FILE) 
 utils.write_out_value(l1_output, config.EVALUATION_METRIC_FILE, new_line=True)

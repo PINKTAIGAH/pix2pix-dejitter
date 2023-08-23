@@ -75,7 +75,8 @@ CHECKPOINT_GEN_SAVE = "../models/gen.pth.tar"
 
 MODEL_LOSSES_FILE = "../raw_data/model_losses.txt"
 MODEL_LOSSES_TITLES = ["epoch", "disc_loss", "gen_loss"]
-EVALUATION_IMAGE_FILE= "../evaluation/default"
+TRAIN_IMAGE_FILE= "../evaluation/default"
+EVALUATION_IMAGE_FILE = "../evaluation/metric"
 
 CRITIC_SCORE_FILE = "../raw_data/critic_score.txt"
 CRITIC_SCORE_TITLES = ["epoch", "disc_real", "disc_fake"]
