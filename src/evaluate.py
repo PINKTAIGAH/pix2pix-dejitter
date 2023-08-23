@@ -57,7 +57,6 @@ with torch.no_grad():
             l1_list.append(L1(y, y_fake).item() * 100)
  
         # Save example of image
-        print((epoch+1)%5)
         if (epoch+1) % 5 == 0:
             print(f"Saving image example")
             utils.save_examples_concatinated(
