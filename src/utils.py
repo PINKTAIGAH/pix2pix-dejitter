@@ -247,7 +247,7 @@ def write_out_value(val, filename, new_line=False):
     Parameters
     ----------
     val: float or string
-        Value to bve written into file
+        Value to be written into file
 
     filename: string
         Directory of file where val will be written into

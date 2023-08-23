@@ -63,11 +63,16 @@ CHANNELS_IMG = 1                            # Colour channels of input image ten
 L1_LAMBDA = 100
 LAMBDA_GP = 10
 CORRELATION_LENGTH = 10
-NUM_EPOCHS =  1000
-LOAD_MODEL =  False
+NUM_EPOCHS =  300
+LOAD_MODEL = True 
 SAVE_MODEL = True
-CHECKPOINT_DISC = "../models/disc.pth.tar"
-CHECKPOINT_GEN = "../models/gen.pth.tar"
+
+CHECKPOINT_DISC_LOAD = "../models/disc.pth.tar"
+CHECKPOINT_GEN_LOAD = "../models/gen.pth.tar"
+
+CHECKPOINT_DISC_SAVE = "../models/disc.pth.tar"
+CHECKPOINT_GEN_SAVE = "../models/gen.pth.tar"
+
 MODEL_LOSSES_FILE = "../raw_data/model_losses.txt"
 MODEL_LOSSES_TITLES = ["epoch", "disc_loss", "gen_loss"]
 EVALUATION_IMAGE_FILE= "../evaluation/default"
@@ -76,6 +81,10 @@ CRITIC_SCORE_FILE = "../raw_data/critic_score.txt"
 CRITIC_SCORE_TITLES = ["epoch", "disc_real", "disc_fake"]
 # WRITER_REAL = SummaryWriter("/home/brunicam/myscratch/p3_scratch/runs/real")
 # WRITER_FAKE = SummaryWriter("/home/brunicam/myscratch/p3_scratch/runs/fake")
+
+# Evaluation hyperparameters
+EVALUATION_EPOCHS = 50
+EVALUATION_METRIC_FILE = "../raw_data/sigma.txt"
 
 """
 Tensor Transformations
