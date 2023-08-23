@@ -47,20 +47,23 @@ l1_list = []
 with torch.no_grad():
     for epoch in range(config.EVALUATION_EPOCHS):
         # Iterate over all images in batches
+        print(f"Evaluating epoch ==> {epoch}")
         for idx, (x, y, _) in enumerate(val_loader):
             # Send x, y, and generated y to device
             x = x.to(config.DEVICE)
             y = y.to(config.DEVICE)
             y_fake = gen(x).to(config.DEVICE)
-            print(L1(y, y_fake).item())
-            l1_list.append(L1(y, y_fake).item())
+            # Append value of L1 distance to list
+            l1_list.append(L1(y, y_fake).item() * 100)
  
         # Save example of image
         if epoch+1 % 5 == 0:
+            print(f"Saving image example")
             utils.save_examples_concatinated(
                 gen, val_loader, epoch, config.EVALUATION_IMAGE_FILE
             )
 
+# Write out mean l1 distance to file
 l1_output = sum(l1_list)/len(l1_list)
 utils.write_out_value(config.SIGMA, config.EVALUATION_METRIC_FILE) 
 utils.write_out_value(l1_output, config.EVALUATION_METRIC_FILE, new_line=True)
