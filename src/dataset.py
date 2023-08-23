@@ -3,6 +3,7 @@ import config
 from torch.utils.data import Dataset, DataLoader
 from ImageGenerator import ImageGenerator
 from torchvision.utils import save_image
+import matplotlib.pyplot as plt
 
 class JitteredDataset(Dataset):
     """
@@ -25,9 +26,8 @@ class JitteredDataset(Dataset):
     """
     def __init__(self, length=1):
         self.length = length
-        self.filter = ImageGenerator(config.PSF, config.IMAGE_SIZE,
-                            config.CORRELATION_LENGTH, config.PADDING_WIDTH,
-                                     config.MAX_JITTER)
+        self.filter = ImageGenerator(config.IMAGE_SIZE, config.CORRELATION_LENGTH,
+                                     config.PADDING_WIDTH, config.MAX_JITTER)
     def __len__(self):
         return self.length
 
@@ -80,16 +80,10 @@ class JitteredDataset(Dataset):
 if __name__ == "__main__":
 
     N = 256
-    filter = ImageGenerator(config.PSF, config.IMAGE_SIZE, config.CORRELATION_LENGTH,
-                            config.PADDING_WIDTH, config.MAX_JITTER)
-    dataset = JitteredDataset(N, 2000, )
-    loader = DataLoader(dataset, batch_size=5)
+    dataset = JitteredDataset(2000, )
+    fig, (ax1, ax2) = plt.subplots(1, 2)
+    x, y, _ = dataset[0]
+    ax1.imshow(y[0], cmap="gray")
+    ax2.imshow(x[0], cmap="gray")
+    plt.show()
 
-    for i, images in enumerate(loader):
-        x, y, unshiftMap = images
-        deshifted = filter.shift(x, unshiftMap, isBatch=True) 
-        
-        if i == 0:
-            save_image(x, "images/Jittered.png")
-            save_image(y, "images/Unjittered.png")
-            save_image(deshifted, "images/Deshifted.png")

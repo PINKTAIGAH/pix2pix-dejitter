@@ -45,7 +45,7 @@ class FileDataset(Dataset):
         self.N = imageSize 
         self.maxJitter = config.MAX_JITTER 
 
-        self.filter = ImageGenerator(config.PSF, config.IMAGE_SIZE, 
+        self.filter = ImageGenerator(config.IMAGE_SIZE, 
                                      config.CORRELATION_LENGTH, config.PADDING_WIDTH,
                                      config.MAX_JITTER)
         self.transform = config.transformsFile

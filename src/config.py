@@ -24,7 +24,7 @@ def _normalise(x):
 
     return x/np.sum(x**2)
 
-def _generatePointFunction():
+def generatePointFunction():
     """
     Generate a image array of a point function with size of defined in config 
     file (excluding padding)
@@ -77,10 +77,6 @@ CRITIC_SCORE_TITLES = ["epoch", "disc_real", "disc_fake"]
 # WRITER_REAL = SummaryWriter("/home/brunicam/myscratch/p3_scratch/runs/real")
 # WRITER_FAKE = SummaryWriter("/home/brunicam/myscratch/p3_scratch/runs/fake")
 
-# Generate a point spread finction by applying a gaussian blur to a point function
-pointFunction = _generatePointFunction()
-PSF = torch.from_numpy(_normalise(gaussian(pointFunction, SIGMA))).type(torch.float32)
-
 """
 Tensor Transformations
 """
@@ -101,4 +97,3 @@ transformsFile = transform.Compose([
 """
 Hyperparameter overwriting for automatic bash scripts 
 """
-
