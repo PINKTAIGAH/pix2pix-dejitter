@@ -47,7 +47,7 @@ class ImageGenerator(Dataset):
         pixel in the flow map vector space. Tensor shape is (H, W, 2) 
     """
 
-    def __init__(self, imageHeight, correlationLength, paddingWidth, maxJitter):
+    def __init__(self, imageHeight, correlationLength, paddingWidth, maxJitter, randomSigma=False):
         
         self.psf = self._generatePSF()
         self.ftPsf = torch.fft.fft2(self.psf)
@@ -55,6 +55,8 @@ class ImageGenerator(Dataset):
         self.correlationLength = correlationLength
         self.pad = Pad(paddingWidth)
         self.maxJitter = maxJitter
+        self.sigma = config.SIGMA
+        self.randomSigma = randomSigma
 
         # Using affine grid calculate identity flow map using identity matrix
         identifyMatrix = torch.tensor([[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]])
@@ -92,11 +94,13 @@ class ImageGenerator(Dataset):
         pointFunction: FloatTensor 
             2D image tensor containing a point spreaffunction
         """
+        if self.randomSigma:
+            self.sigma = np.random.uniform(0.1, 20)
 
         # Generate a point spread finction by applying a gaussian blur to a point function
         pointFunction = np.zeros((config.NOISE_SIZE, config.NOISE_SIZE))
         pointFunction[config.NOISE_SIZE//2, config.NOISE_SIZE//2] = 1
-        psf = self._normalise(gaussian(pointFunction, config.SIGMA))
+        psf = self._normalise(gaussian(pointFunction, self.sigma))
         return torch.from_numpy(psf).type(torch.float32) 
 
     def _generateEnvelopeCenters(self):
@@ -299,7 +303,7 @@ class ImageGenerator(Dataset):
 
 def test():
 
-    filter = ImageGenerator(config.PSF, config.IMAGE_SIZE, config.CORRELATION_LENGTH,
+    filter = ImageGenerator(config.IMAGE_SIZE, config.CORRELATION_LENGTH,
                             config.PADDING_WIDTH, config.MAX_JITTER)
 
     t1 = time()

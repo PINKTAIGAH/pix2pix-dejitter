@@ -7,11 +7,18 @@ from datasetFile import FileDataset
 from generator import Generator
 from discriminator import Discriminator
 from torch.utils.data import DataLoader
+import numpy as np
+from skimage import filters
 
 """
 Evaluate the putputs of a trained pair of GAN models by loading them and calculating
 measures of image similarity.
 """
+
+#EVALUATION_IMAGE_FILE = '../evaluation/siemens_sigma_30'
+#CHECKPOINT_GEN_LOAD = '../models/gen.siemens_sigma_30.tar'
+#CHECKPOINT_DISC_LOAD = '../models/disc.siemens_sigma_30.tar'
+#SIGMA = 30
 
 # Initialise generator and discriminator
 disc = Discriminator(inChannels=config.CHANNELS_IMG).to(config.DEVICE)
@@ -34,8 +41,8 @@ utils.load_checkpoint(
 
 # Load validation dataset and dataloader
 # val_dataset = JitteredDataset(1,)
-val_dataset = FileDataset( config.VAL_DIR, config.IMAGE_SIZE)
-val_loader = DataLoader(val_dataset, batch_size=1, shuffle=True)
+val_dataset = FileDataset(config.SIEMENS_VAL_DIR, config.IMAGE_SIZE)
+val_loader = DataLoader(val_dataset, batch_size=2, shuffle=True)
 
 # Set generator mode to evaluation
 gen.eval()
@@ -43,28 +50,39 @@ gen.eval()
 # Initialise function that will calculate L1
 L1 = torch.nn.L1Loss()
 l1_list = []
+sobel_delta_list = []
 
 # Iterate over epochs
 with torch.no_grad():
     for epoch in range(config.EVALUATION_EPOCHS):
         # Iterate over all images in batches
         print(f"Evaluating epoch ==> {epoch}")
-        for idx, (x, y, _) in enumerate(val_loader):
+        for idx, (_, y, _) in enumerate(val_loader):
             # Send x, y, and generated y to device
-            x = x.to(config.DEVICE)
             y = y.to(config.DEVICE)
-            y_fake = gen(x).to(config.DEVICE)
+            y_fake = gen(y)
+            y = y.to(torch.device("cpu"))
+            y_fake = y_fake.to(torch.device("cpu"))
+            
+            y_sobel = filters.sobel(y[:, :].numpy())
+            y_fake_sobel = filters.sobel(y_fake[:, :].numpy())
+            
             # Append value of L1 distance to list
-            l1_list.append(L1(y, y_fake).item() * 100)
+            sobel_delta_list.append(np.abs(y_sobel.sum() - y_fake_sobel.sum()))
+            # l1_list.append(L1(y, y_fake).item() * 100)
  
-        # Save example of image
-        if (epoch+1) % 5 == 0:
-            print(f"Saving image example")
-            utils.save_examples_concatinated(
-                gen, val_loader, epoch, config.EVALUATION_IMAGE_FILE
-            )
+        # Save ecample of images
+        utils.save_examples_concatinated(
+            gen, val_loader, (epoch), config.EVALUATION_IMAGE_FILE
+        )
 
-# Write out mean l1 distance to file
-l1_output = sum(l1_list)/len(l1_list)
+# Write out mean sobel delta to file
+sobel_delta_array = np.array(sobel_delta_list)
+sobel_delta_output = sobel_delta_array.mean()
+sobel_delta_error = np.abs(sobel_delta_array.std()/np.sqrt(sobel_delta_array.size))
 utils.write_out_value(config.SIGMA, config.EVALUATION_METRIC_FILE) 
-utils.write_out_value(l1_output, config.EVALUATION_METRIC_FILE, new_line=True)
+utils.write_out_value(sobel_delta_output, config.EVALUATION_METRIC_FILE, new_line=False)
+utils.write_out_value(sobel_delta_error, config.EVALUATION_METRIC_FILE, new_line=True)
+
+
+

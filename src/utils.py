@@ -68,13 +68,13 @@ def save_examples_concatinated(gen, val_loader, epoch, folder):
     gen.eval()
     with torch.no_grad():
         # Generate unshifted image using the GAN's generator network
-        y_fake = gen(x)
+        y_fake = gen(y)
         # Remove normalisation
         x = x * 0.5 + 0.5
         y = y * 0.5 + 0.5
         y_fake = y_fake * 0.5 + 0.5  
         # Concatinate all output images in Batch axis in order to have size (3, 1, H, W)
-        output = torch.cat([x, y, y_fake], dim=0)
+        output = torch.cat([y, y_fake], dim=0)
         # Make image grid containing all desired output images
         image_grid = make_grid(output)
         save_image(image_grid, folder + f"/output_{epoch}.png")
