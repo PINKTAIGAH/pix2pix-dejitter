@@ -49,14 +49,14 @@ class ImageGenerator(Dataset):
 
     def __init__(self, imageHeight, correlationLength, paddingWidth, maxJitter, randomSigma=False):
         
+        self.sigma = config.SIGMA
+        self.randomSigma = randomSigma
         self.psf = self._generatePSF()
         self.ftPsf = torch.fft.fft2(self.psf)
         self.imageHight = imageHeight
         self.correlationLength = correlationLength
         self.pad = Pad(paddingWidth)
         self.maxJitter = maxJitter
-        self.sigma = config.SIGMA
-        self.randomSigma = randomSigma
 
         # Using affine grid calculate identity flow map using identity matrix
         identifyMatrix = torch.tensor([[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]])
@@ -84,7 +84,7 @@ class ImageGenerator(Dataset):
 
         return x/np.sum(x**2)
     
-    def _generatePSF(self):
+    def _generatePSF(self,):
         """
         Generate a image tensor of a point spread function with size of defined 
         in config file (excluding padding)
@@ -304,7 +304,7 @@ class ImageGenerator(Dataset):
 def test():
 
     filter = ImageGenerator(config.IMAGE_SIZE, config.CORRELATION_LENGTH,
-                            config.PADDING_WIDTH, config.MAX_JITTER)
+                            config.PADDING_WIDTH, config.MAX_JITTER, True)
 
     t1 = time()
     groundTruth = filter.generateGroundTruth()

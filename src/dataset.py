@@ -24,10 +24,11 @@ class JitteredDataset(Dataset):
         Length of dataset. Given the method used in the __getitem__ method, this
         parameter is arbitrary. (Yet nescesary for class to function properly)
     """
-    def __init__(self, length=1):
+    def __init__(self, length=1, randomSigma=False):
         self.length = length
         self.filter = ImageGenerator(config.IMAGE_SIZE, config.CORRELATION_LENGTH,
-                                     config.PADDING_WIDTH, config.MAX_JITTER)
+                                     config.PADDING_WIDTH, config.MAX_JITTER, 
+                                     randomSigma)
     def __len__(self):
         return self.length
 
@@ -80,7 +81,7 @@ class JitteredDataset(Dataset):
 if __name__ == "__main__":
 
     N = 256
-    dataset = JitteredDataset(2000, )
+    dataset = JitteredDataset(2000, True)
     fig, (ax1, ax2) = plt.subplots(1, 2)
     x, y, _ = dataset[0]
     ax1.imshow(y[0], cmap="gray")
