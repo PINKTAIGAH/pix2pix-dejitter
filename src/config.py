@@ -73,3 +73,24 @@ transformsFile = transform.Compose([
 Hyperparameter overwriting for automatic bash scripts 
 """
 
+# Adding 1.5 as SIGMA
+SIGMA = 1.5
+EVALUATION_IMAGE_FILE= '../evaluation/siemens_sigma_1.5'
+# Adding 1.25 as SIGMA
+SIGMA = 1.25
+EVALUATION_IMAGE_FILE= '../evaluation/siemens_sigma_1.25'
+# Adding 1.5 as SIGMA
+SIGMA = 1.5
+EVALUATION_IMAGE_FILE= '../evaluation/siemens_sigma_1.5'
+# Adding 1.25 as SIGMA
+SIGMA = 1.25
+EVALUATION_IMAGE_FILE= '../evaluation/siemens_sigma_1.25'
+# Adding 1.5 as SIGMA
+SIGMA = 1.5
+EVALUATION_IMAGE_FILE= '../evaluation/siemens_sigma_1.5'
+# Adding 1.25 as SIGMA
+SIGMA = 1.25
+EVALUATION_IMAGE_FILE= '../evaluation/siemens_sigma_1.25'
+# Adding 1.5 as SIGMA
+SIGMA = 1.5
+EVALUATION_IMAGE_FILE= '../evaluation/siemens_sigma_1.5'
