@@ -42,7 +42,7 @@ utils.load_checkpoint(
 # Load validation dataset and dataloader
 # val_dataset = JitteredDataset(1,)
 val_dataset = FileDataset(config.SIEMENS_VAL_DIR, config.IMAGE_SIZE)
-val_loader = DataLoader(val_dataset, batch_size=2, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
 
 # Set generator mode to evaluation
 gen.eval()
@@ -57,25 +57,17 @@ with torch.no_grad():
     for epoch in range(config.EVALUATION_EPOCHS):
         # Iterate over all images in batches
         print(f"Evaluating epoch ==> {epoch}")
-        for idx, (_, y, _) in enumerate(val_loader):
-            # Send x, y, and generated y to device
-            y = y.to(config.DEVICE)
-            y_fake = gen(y)
-            y = y.to(torch.device("cpu"))
-            y_fake = y_fake.to(torch.device("cpu"))
-            
-            y_sobel = filters.sobel(y[:, :].numpy())
-            y_fake_sobel = filters.sobel(y_fake[:, :].numpy())
-            
-            # Append value of L1 distance to list
-            sobel_delta_list.append(np.abs(y_sobel.sum() - y_fake_sobel.sum()))
-            # l1_list.append(L1(y, y_fake).item() * 100)
- 
-        # Save ecample of images
-        utils.save_examples_concatinated(
-            gen, val_loader, (epoch), config.EVALUATION_IMAGE_FILE
-        )
 
+        # Save ecample of images
+        sobel_score = utils.save_examples_concatinated(
+            gen, val_loader, (epoch), config.EVALUATION_IMAGE_FILE, True
+        )
+        sobel_delta_list.append(sobel_score)
+
+        utils.write_out_value(epoch, "../raw_data/sobel_trial.txt", False)
+        utils.write_out_value(sobel_delta_list[-1], "../raw_data/sobel_trial.txt", True)
+
+"""
 # Write out mean sobel delta to file
 sobel_delta_array = np.array(sobel_delta_list)
 sobel_delta_output = sobel_delta_array.mean()
@@ -83,6 +75,6 @@ sobel_delta_error = np.abs(sobel_delta_array.std()/np.sqrt(sobel_delta_array.siz
 utils.write_out_value(config.SIGMA, config.EVALUATION_METRIC_FILE) 
 utils.write_out_value(sobel_delta_output, config.EVALUATION_METRIC_FILE, new_line=False)
 utils.write_out_value(sobel_delta_error, config.EVALUATION_METRIC_FILE, new_line=True)
-
+"""
 
 

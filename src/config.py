@@ -13,6 +13,8 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 TRAIN_DIR = "/home/brunicam/myscratch/p3_scratch/p06_images/train/"
 # VAL_DIR = "/home/giorgio/Desktop/p06_images/val/"
 VAL_DIR = "/home/brunicam/myscratch/p3_scratch/p06_images/val/"
+SIEMENS_VAL_DIR = "/home/giorgio//Desktop/val_siemens/"
+
 LEARNING_RATE = 2e-4
 BATCH_SIZE = 32
 SCHEDULAR_DECAY = 0.5
@@ -49,8 +51,13 @@ CRITIC_SCORE_TITLES = ["epoch", "disc_real", "disc_fake"]
 # WRITER_FAKE = SummaryWriter("/home/brunicam/myscratch/p3_scratch/runs/fake")
 
 # Evaluation hyperparameters
-EVALUATION_EPOCHS = 50
+EVALUATION_EPOCHS = 100
 EVALUATION_METRIC_FILE = "../raw_data/siemens_sigma.txt"
+
+EVALUATION_IMAGE_FILE = "../evaluation/module/"
+
+CHECKPOINT_DISC_LOAD = "../models/disc.siemens_sigma_5.tar"
+CHECKPOINT_GEN_LOAD = "../models/gen.siemens_sigma_5.tar"
 
 """
 Tensor Transformations
@@ -72,25 +79,4 @@ transformsFile = transform.Compose([
 """
 Hyperparameter overwriting for automatic bash scripts 
 """
-
-# Adding 1.5 as SIGMA
-SIGMA = 1.5
-EVALUATION_IMAGE_FILE= '../evaluation/siemens_sigma_1.5'
-# Adding 1.25 as SIGMA
-SIGMA = 1.25
-EVALUATION_IMAGE_FILE= '../evaluation/siemens_sigma_1.25'
-# Adding 1.5 as SIGMA
-SIGMA = 1.5
-EVALUATION_IMAGE_FILE= '../evaluation/siemens_sigma_1.5'
-# Adding 1.25 as SIGMA
-SIGMA = 1.25
-EVALUATION_IMAGE_FILE= '../evaluation/siemens_sigma_1.25'
-# Adding 1.5 as SIGMA
-SIGMA = 1.5
-EVALUATION_IMAGE_FILE= '../evaluation/siemens_sigma_1.5'
-# Adding 1.25 as SIGMA
-SIGMA = 1.25
-EVALUATION_IMAGE_FILE= '../evaluation/siemens_sigma_1.25'
-# Adding 1.5 as SIGMA
-SIGMA = 1.5
-EVALUATION_IMAGE_FILE= '../evaluation/siemens_sigma_1.5'
+SIGMA = 10

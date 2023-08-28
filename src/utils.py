@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import config
 from torchvision.utils import save_image, make_grid
+from skimage import filters
 
 def save_examples(gen, val_loader, epoch, folder):
     """
@@ -37,11 +38,12 @@ def save_examples(gen, val_loader, epoch, folder):
         save_image(y_fake, folder + f"/y_gen_{epoch}.png")
     gen.train()
 
-def save_examples_concatinated(gen, val_loader, epoch, folder):
+def save_examples_concatinated(gen, val_loader, epoch, folder, save_sobel_score=False):
     """
     Save examples of output from generator as png images at a specified folder
     As opposed to saving images seperatly, images will be concatinated and outputted
     as a single image to increase ease to visually compare outputs from GAN
+    Can also output the sobel score of the generated images
 
     Parameters
     ----------
@@ -61,6 +63,9 @@ def save_examples_concatinated(gen, val_loader, epoch, folder):
     filter: torch.utils.Data.Dataset instance
         Class constining method required to unshift image using generator's 
         outputted flowmap
+
+    save_sobel_score: bool
+        Computes and returns the sobel score of the images generated
     """
     # Unpack jittered (x) and ground truth (y) images from dataloader and send to device
     x, y, _ = next(iter(val_loader))
@@ -78,6 +83,14 @@ def save_examples_concatinated(gen, val_loader, epoch, folder):
         # Make image grid containing all desired output images
         image_grid = make_grid(output)
         save_image(image_grid, folder + f"/output_{epoch}.png")
+
+        if save_sobel_score:
+            y_sobel = filters.sobel(y[:, :].numpy())
+            y_fake_sobel = filters.sobel(y_fake[:, :].numpy())
+            
+            # Append value of L1 distance to list
+            return np.abs(y_sobel.sum() - y_fake_sobel.sum())
+            
     gen.train()
 
 def save_checkpoint(model, optimizer, filename="my_checkpoint.pth.tar"):
@@ -287,6 +300,12 @@ def write_out_titles(titles, filename,):
             # Add new line if final element in list
             else:
                 write_out_value(title, filename, new_line=True)
+
+    def findSobelScore(y, y_fake):
+        """
+        Insert comments here
+        """
+            
 
 def test():
     titles = ["gen_loss", "disc_loss", "random_string"]
