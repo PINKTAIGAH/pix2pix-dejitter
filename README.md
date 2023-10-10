@@ -7,7 +7,7 @@ Networks are tested on images of size 256x256. Some experimentation was done wit
 
 ## Setup
 
-### Prerequisits
+### Pre-requisites
 
 This implementation was tested using a NVIDEA GPU + CUDA CuDNN. While this implementation should work on a CPU with no modifications to the sourcecode, this is as of yet untested.
 
