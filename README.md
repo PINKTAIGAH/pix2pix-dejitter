@@ -73,6 +73,16 @@ CHECKPOINT_DISC_LOAD = "../models/disc.pth.tar"  # Discriminator weights
 CHECKPOINT_GEN_LOAD = "../models/gen.pth.tar"    # Generator weights
 ~~~
 
+## Repository Structure
+
+The way the repository is structured by default is that all scripts are located in ./scr. 
+
+Any image generated while training a model are saved in ./evaluation/dafault/ while images created when evaluating a model after training will be saved in ./evaluation/metric .
+
+User sprecified parameters that are saved while training (such as the value of the loss function) are stored in a txt file in ./raw_data .
+
+The weights of a model are saved to and accesed from the ./models folder.
+
 ## Using trained network in productio
 
 (**Work in progress**)
